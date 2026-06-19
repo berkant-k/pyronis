@@ -1,0 +1,172 @@
+{
+  "idGeneration": {
+    "maxLength": 6,
+    "alphabet": "0123456789"
+  },
+  "fhir": {
+    "defaultUrl": "https://clinical-dev.tiga.health/fhir-server/api/v4/",
+    "storageKey": "pyronis_fhir_base_url",
+    "profiles": {
+      "patient": "https://fhir.pyronis.health/StructureDefinition/PatientWithIdentifierProfile"
+    },
+    "identifierSystems": {
+      "mrn": "https://pyronis.health/mrn",
+      "qid": "http://hl7.org/fhir/sid/nn",
+      "passport": "http://hl7.org/fhir/sid/ppn",
+      "visitId": "https://pyronis.health/visit-id",
+      "licence": "https://pyronis.health/licence",
+      "orgId": "https://pyronis.health/org-id",
+      "allergy": "https://pyronis.health/fhir/allergy-id",
+      "condition": "https://pyronis.health/fhir/condition-id",
+      "composition": "https://pyronis.health/fhir/composition-id",
+      "appointment": "https://pyronis.health/fhir/appointment-id",
+      "serviceRequest": "https://pyronis.health/fhir/service-request-id",
+      "medicationRequest": "https://pyronis.health/fhir/medication-request-id",
+      "observation": "https://pyronis.health/fhir/observation-id",
+      "flag": "https://pyronis.health/fhir/flag-id",
+      "diagnosticReport": "https://pyronis.health/fhir/diagnostic-report-id",
+      "familyHistory": "https://pyronis.health/fhir/family-history-id",
+      "relatedPerson": "https://pyronis.health/fhir/related-person-id",
+      "consent": "https://pyronis.health/fhir/consent-id",
+      "task": "https://pyronis.health/fhir/task-id",
+      "documentRef": "https://pyronis.health/fhir/document-ref-id",
+      "practitioner": "https://pyronis.health/fhir/practitioner-id",
+      "organization": "https://pyronis.health/fhir/organization-id",
+      "practitionerRole": "https://pyronis.health/fhir/practitioner-role-id"
+    },
+    "identifierTypes": {
+      "NN": "QID",
+      "NN_DISPLAY": "Qatar National Number"
+    },
+    "extensions": {
+      "nationality": "https://fhir.pyronis.health/StructureDefinition/patient-nationality",
+      "language": "http://hl7.org/fhir/StructureDefinition/language",
+      "vip": "http://pyronis.health/fhir/extension/vip",
+      "insuranceCompany": "http://pyronis.health/fhir/extension/insurance-company",
+      "administrativeNotes": "http://pyronis.health/fhir/extension/administrative-notes",
+      "personType": "https://fhir.pyronis.health/StructureDefinition/PersonType",
+      "birthPlace": "https://fhir.pyronis.health/StructureDefinition/patient-birthPlace",
+      "cadavericDonor": "https://fhir.pyronis.health/StructureDefinition/patient-cadavericDonor",
+      "ethnicity": "https://fhir.pyronis.health/StructureDefinition/Ethnicity",
+      "nameLanguage": "https://fhir.pyronis.health/StructureDefinition/NameLanguage",
+      "addressBuildingNumber": "https://fhir.pyronis.health/StructureDefinition/AddressBuildingNumber",
+      "addressLanguage": "https://fhir.pyronis.health/StructureDefinition/AddressLanguage",
+      "addressStreetNumber": "https://fhir.pyronis.health/StructureDefinition/AddressStreetNumber",
+      "addressUnit": "https://fhir.pyronis.health/StructureDefinition/AddressUnit",
+      "addressZone": "https://fhir.pyronis.health/StructureDefinition/AddressZone",
+      "rxStructured": "http://pyronis.health/fhir/extension/rx-structured",
+      "inpatientMed": "http://pyronis.health/fhir/extension/inpatient-med",
+      "directiveNotes": "http://pyronis.health/fhir/extension/directive-notes",
+      "practitionerSpecialty": "http://pyronis.health/fhir/extension/practitioner-specialty"
+    },
+    "codeSystems": {
+      "identifierType": "https://fhir.pyronis.health/CodeSystem/IdentifierTypes",
+      "countryCode": "https://fhir.pyronis.health/CodeSystem/Nationality",
+      "personType": "https://fhir.pyronis.health/CodeSystem/PersonType",
+      "language": "urn:ietf:bcp:47",
+      "referralCategory": "http://pyronis.health/fhir/service-category",
+      "documentType": "http://pyronis.health/fhir/document-type",
+      "taskCategory": "http://pyronis.health/fhir/task-category",
+      "referralSpecialty": "http://pyronis.health/fhir/referral-specialty",
+      "phqLikert": "https://pyronis.health/fhir/CodeSystem/phq-likert",
+      "auditC": "https://pyronis.health/fhir/CodeSystem/audit-c",
+      "duration": "https://pyronis.health/fhir/CodeSystem/duration",
+      "loinc": "http://loinc.org",
+      "snomedCt": "http://snomed.info/sct",
+      "ucum": "http://unitsofmeasure.org",
+      "observationCategory": "http://terminology.hl7.org/CodeSystem/observation-category",
+      "conditionClinicalStatus": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+      "conditionVerificationStatus": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+      "conditionCategory": "http://terminology.hl7.org/CodeSystem/condition-category",
+      "icd10": "http://hl7.org/fhir/sid/icd-10",
+      "medicationRequestCategory": "http://terminology.hl7.org/CodeSystem/medicationrequest-category",
+      "flagCategory": "http://terminology.hl7.org/CodeSystem/flag-category",
+      "diagnosticReportCategory": "http://terminology.hl7.org/CodeSystem/v2-0074",
+      "familyRelationship": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+      "relatedPersonRelationship": "http://terminology.hl7.org/CodeSystem/v2-0131",
+      "consentScope": "http://terminology.hl7.org/CodeSystem/consentscope",
+      "actCode": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+      "organizationType": "http://terminology.hl7.org/CodeSystem/organization-type",
+      "practitionerRoleCode": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+      "identifierTypeCodes": "http://terminology.hl7.org/CodeSystem/v2-0203",
+      "appointmentType": "http://terminology.hl7.org/CodeSystem/v2-0276",
+      "participationType": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+      "allergyClinical": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+      "allergyVerification": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+      "cvx": "http://hl7.org/fhir/sid/cvx"
+    },
+    "questionnaires": {
+      "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
+      "gad7": "https://pyronis.health/fhir/Questionnaire/gad7",
+      "auditC": "https://pyronis.health/fhir/Questionnaire/audit-c",
+      "patientIntake": "https://pyronis.health/fhir/Questionnaire/patient-intake"
+    },
+    "valueSets": {
+      "personType": "https://fhir.pyronis.health/ValueSet/PersonType",
+      "ethnicity": "https://fhir.pyronis.health/ValueSet/Ethnicity"
+    },
+    "options": {
+      "personType": [
+        {"code": "QAT", "display": "Qatari Citizen"},
+        {"code": "GCC", "display": "GCC National"},
+        {"code": "RES", "display": "Resident"},
+        {"code": "VIS", "display": "Visitor"},
+        {"code": "DIP", "display": "Diplomat"},
+        {"code": "STD", "display": "Student"}
+      ],
+      "ethnicity": [
+        {"code": "90027003", "display": "Arab", "system": "http://snomed.info/sct"},
+        {"code": "413464008", "display": "Caucasian", "system": "http://snomed.info/sct"},
+        {"code": "413490006", "display": "African", "system": "http://snomed.info/sct"},
+        {"code": "90028008", "display": "South Asian", "system": "http://snomed.info/sct"},
+        {"code": "315280000", "display": "East Asian", "system": "http://snomed.info/sct"},
+        {"code": "372122000", "display": "Hispanic / Latino", "system": "http://snomed.info/sct"},
+        {"code": "OTH", "display": "Other", "system": "https://fhir.pyronis.health/CodeSystem/Ethnicity"}
+      ]
+    },
+    "observations": {
+      "categories": {
+        "exam":          { "code": "exam",           "display": "Physical Exam",    "system": "http://terminology.hl7.org/CodeSystem/observation-category" },
+        "socialHistory": { "code": "social-history",  "display": "Social History",   "system": "http://terminology.hl7.org/CodeSystem/observation-category" },
+        "vitalSigns":    { "code": "vital-signs",     "display": "Vital Signs",      "system": "http://terminology.hl7.org/CodeSystem/observation-category" }
+      },
+      "physicalExam": [
+        { "code": "32469-4", "display": "General appearance" },
+        { "code": "28060-5", "display": "Head, eyes, ears, nose & throat" },
+        { "code": "56850-1", "display": "Cardiovascular" },
+        { "code": "11412-2", "display": "Respiratory" },
+        { "code": "32473-6", "display": "Abdomen" },
+        { "code": "32474-4", "display": "Musculoskeletal" },
+        { "code": "54596-4", "display": "Neurological" },
+        { "code": "72290-0", "display": "Skin" },
+        { "code": "32477-7", "display": "Genitourinary" }
+      ],
+      "socialHistory": [
+        { "code": "72166-2", "display": "Smoking status",           "valueType": "coded" },
+        { "code": "74013-4", "display": "Alcohol use",              "valueType": "text" },
+        { "code": "74205-4", "display": "Substance use",            "valueType": "text" },
+        { "code": "68516-4", "display": "Physical activity",        "valueType": "text" },
+        { "code": "11341-6", "display": "Occupation",               "valueType": "text" },
+        { "code": "82589-3", "display": "Education level",          "valueType": "text" },
+        { "code": "71802-3", "display": "Housing / living situation","valueType": "text" }
+      ],
+      "smokingStatusOptions": [
+        { "code": "LA18978-9", "display": "Never smoker" },
+        { "code": "LA18976-3", "display": "Current every day smoker" },
+        { "code": "LA18977-1", "display": "Current some day smoker" },
+        { "code": "LA18981-3", "display": "Light smoker (≤10/day)" },
+        { "code": "LA18982-1", "display": "Heavy smoker (>10/day)" },
+        { "code": "LA15920-4", "display": "Former smoker" },
+        { "code": "LA18980-5", "display": "Passive / second-hand exposure" },
+        { "code": "LA18979-7", "display": "Unknown" }
+      ]
+    }
+  },
+  "empi": {
+    "defaultUrl": "https://empi-dev.tiga.health/fhir",
+    "storageKey": "pyronis_empi_base_url"
+  },
+  "auth": {
+    "storageKey": "pyronis_auth_token"
+  }
+}
