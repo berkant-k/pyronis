@@ -107,6 +107,7 @@ export const EXT_ADDR_LANGUAGE = config.fhir.extensions.addressLanguage;
 export const EXT_ADDR_STREET = config.fhir.extensions.addressStreetNumber;
 export const EXT_ADDR_UNIT = config.fhir.extensions.addressUnit;
 export const EXT_ADDR_ZONE = config.fhir.extensions.addressZone;
+export const MANAGING_ORG_IDENTIFIER = config.fhir.managingOrganization.identifier;
 const CS_IDENTIFIER_TYPE = config.fhir.codeSystems.identifierType;
 const CS_COUNTRY_CODE = config.fhir.codeSystems.countryCode;
 const CS_PERSON_TYPE = config.fhir.codeSystems.personType;
@@ -727,6 +728,13 @@ function buildPatientBody(input: NewPatientInput, id?: string): Patient {
                 ...(addrExtensions.length ? {extension: addrExtensions} : {}),
             }]
             : undefined;
+    const telecom:Patient["telecom"] =
+        input.phone || input.email
+            ? [
+                ...(input.phone ? [{system: "phone" as const, value: input.phone, use: "mobile" as const}] : []),
+                ...(input.email ? [{system: "email" as const, value: input.email}] : []),
+            ]
+            : undefined;
 
     const meta = {"profile": [config.fhir.profiles.patient]}
 
@@ -740,12 +748,9 @@ function buildPatientBody(input: NewPatientInput, id?: string): Patient {
         gender: input.gender,
         birthDate: input.birthDate,
         extension: extensions,
-        "managingOrganization": {"reference": "Organization?identifier=Sierda"},
+        "managingOrganization": {"reference": "Organization?identifier="+MANAGING_ORG_IDENTIFIER},
         address,
-        telecom: [
-            ...(input.phone ? [{system: "phone" as const, value: input.phone, use: "mobile" as const}] : []),
-            ...(input.email ? [{system: "email" as const, value: input.email}] : []),
-        ],
+        telecom,
         ...(input.deceased
             ? input.deceasedDateTime
                 ? {deceasedDateTime: input.deceasedDateTime}
@@ -1079,6 +1084,7 @@ export async function createEncounter(input: NewEncounterInput): Promise<Encount
             value: visitId,
         }],
         status: "in-progress",
+        serviceProvider: {"reference": "Organization?identifier="+MANAGING_ORG_IDENTIFIER},
         class: {
             system: config.fhir.codeSystems.actCode,
             code: input.classCode,

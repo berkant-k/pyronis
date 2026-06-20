@@ -4,10 +4,15 @@
     "alphabet": "0123456789"
   },
   "fhir": {
-    "defaultUrl": "https://clinical-dev.tiga.health/fhir-server/api/v4/",
+    "defaultUrl": "http://localhost:5826/fhir/r4b",
     "storageKey": "pyronis_fhir_base_url",
     "profiles": {
       "patient": "https://fhir.pyronis.health/StructureDefinition/PatientWithIdentifierProfile"
+    },
+    "managingOrganization": {
+      "id": "123456",
+      "name": "Pyronis Health",
+      "identifier": "Sierda"
     },
     "identifierSystems": {
       "mrn": "https://pyronis.health/mrn",
@@ -39,7 +44,7 @@
       "NN_DISPLAY": "Qatar National Number"
     },
     "extensions": {
-      "nationality": "https://fhir.pyronis.health/StructureDefinition/patient-nationality",
+      "nationality": "http://hl7.org/fhir/StructureDefinition/patient-nationality",
       "language": "http://hl7.org/fhir/StructureDefinition/language",
       "vip": "http://pyronis.health/fhir/extension/vip",
       "insuranceCompany": "http://pyronis.health/fhir/extension/insurance-company",
@@ -47,7 +52,7 @@
       "personType": "https://fhir.pyronis.health/StructureDefinition/PersonType",
       "birthPlace": "https://fhir.pyronis.health/StructureDefinition/patient-birthPlace",
       "cadavericDonor": "https://fhir.pyronis.health/StructureDefinition/patient-cadavericDonor",
-      "ethnicity": "https://fhir.pyronis.health/StructureDefinition/Ethnicity",
+      "ethnicity": "http://fhir.pyronis.health/StructureDefinition/Ethnicity",
       "nameLanguage": "https://fhir.pyronis.health/StructureDefinition/NameLanguage",
       "addressBuildingNumber": "https://fhir.pyronis.health/StructureDefinition/AddressBuildingNumber",
       "addressLanguage": "https://fhir.pyronis.health/StructureDefinition/AddressLanguage",

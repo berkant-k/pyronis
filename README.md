@@ -1,6 +1,6 @@
 # Pyronis EMR
 
-A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **React 19**. It connects directly to a FHIR R4B server (tested against [fhir-candle](https://github.com/GinoCanessa/fhir-candle)) with no proprietary backend — all clinical operations go through standard FHIR REST APIs.
+A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **React 19**. It connects directly to a FHIR R4B server (tested against [fhir-candle](https://github.com/FHIR/fhir-candle/)) with no proprietary backend — all clinical operations go through standard FHIR REST APIs.
 
 > **Status:** Active development — core clinical workflows are implemented and usable. See the [feature gap analysis](MISSING_FEATURES.md) for what is planned next.
 
@@ -188,8 +188,12 @@ A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **Reac
 Start a local fhir-candle as .Net tool:
 
 ```bash
-dotnet tool install --global fhir-candle
 fhir-candle -o
+```
+if you don't have the tool installed.
+
+```bash
+dotnet tool install --global fhir-candle
 ```
 
 The FHIR R4B base URL will be `http://localhost:5826/fhir/r4b`.
