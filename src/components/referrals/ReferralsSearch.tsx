@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import {
   searchReferrals, formatDate, patientDisplayName,
-  referralStatusColor, referralPriorityColor,
+  referralStatusColor, referralPriorityColor, parseFhirId,
   type ReferralWithPatient,
 } from "@/lib/fhir-client"
 import { Input } from "@/components/ui/input"
@@ -117,7 +117,7 @@ export function ReferralsSearch({ initialData }: Props) {
                 const status       = referral.status   ?? "unknown"
                 const reason       = referral.reasonCode?.[0]?.text
                 const subjectRef   = referral.subject?.reference
-                const patientId    = subjectRef?.startsWith("Patient/") ? subjectRef.slice(8) : undefined
+                const patientId    = parseFhirId(subjectRef, "Patient")
                 const displayName  = patient
                   ? patientDisplayName(patient)
                   : (referral.subject?.display ?? "Unknown patient")

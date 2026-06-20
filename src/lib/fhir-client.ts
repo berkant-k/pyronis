@@ -54,12 +54,37 @@ const PRACTITIONER_ROLE_ID_SYSTEM  = config.fhir.identifierSystems.practitionerR
 
 export const FHIR_STORAGE_KEY = config.fhir.storageKey;
 
-export function getFhirBaseUrl(): string {
+// Parses a FHIR reference string into its resource type and logical ID.
+// Handles both relative ("Patient/123") and absolute ("https://server/fhir/Patient/123") forms.
+export function parseFhirReference(reference: string | undefined | null): { resourceType: string; id: string } | null {
+    if (!reference) return null;
+    const segments = reference.split("/");
+    const id = segments.at(-1);
+    const resourceType = segments.at(-2);
+    if (!id || !resourceType) return null;
+    return { resourceType, id };
+}
+
+// Extracts the logical ID from a FHIR reference, optionally asserting the resource type.
+// Returns undefined if the reference is absent or the type doesn't match.
+export function parseFhirId(reference: string | undefined | null, expectedType?: string): string | undefined {
+    const parsed = parseFhirReference(reference);
+    if (!parsed) return undefined;
+    if (expectedType && parsed.resourceType !== expectedType) return undefined;
+    return parsed.id;
+}
+
+export function resolveStoredUrl(storageKey: string, envVar: string | undefined, label: string): string {
     if (typeof window !== "undefined") {
-        const stored = localStorage.getItem(FHIR_STORAGE_KEY);
+        const stored = localStorage.getItem(storageKey);
         if (stored?.trim()) return stored.trim();
     }
-    return process.env.NEXT_PUBLIC_FHIR_BASE_URL ?? config.fhir.defaultUrl;
+    if (envVar?.trim()) return envVar.trim();
+    throw new Error(`${label} base URL not set`);
+}
+
+export function getFhirBaseUrl(): string {
+    return resolveStoredUrl(FHIR_STORAGE_KEY, process.env.NEXT_PUBLIC_FHIR_BASE_URL, "FHIR");
 }
 
 export function saveFhirBaseUrl(url: string): void {
@@ -166,7 +191,11 @@ async function fhirRequest(url: string, init: RequestInit): Promise<Response> {
 async function fhirFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
     const url = new URL(`${getFhirBaseUrl()}/${path}`);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fhirRequest(url.toString(), {headers: await authHeaders({Accept: "application/fhir+json"})});
+    console.log("FHIR Request for: ", url.toString());
+    const res = await fhirRequest(url.toString(),
+        {headers: await authHeaders({Accept: "application/fhir+json"})}
+    );
+    console.log("FHIR Response for: ", url.toString()+","+res.status);
     if (!res.ok) throw new Error(`FHIR request failed: ${res.status} ${res.statusText}`);
     return res.json() as Promise<T>;
 }
@@ -1168,7 +1197,7 @@ function buildAllergyBody(input: AllergyIntoleranceInput, id?: string): AllergyI
 
 export function parseAllergyIntolerance(a: AllergyIntolerance): AllergyIntoleranceInput {
     return {
-        patientId: a.patient?.reference?.replace("Patient/", "") ?? "",
+        patientId: parseFhirId(a.patient?.reference, "Patient") ?? "",
         code: a.code?.coding?.[0]?.display ?? a.code?.text ?? "",
         type: a.type as AllergyIntoleranceInput["type"],
         category: a.category?.[0] as AllergyIntoleranceInput["category"],
@@ -1255,8 +1284,8 @@ function buildConditionBody(input: ConditionInput, id?: string): Condition {
 
 export function parseCondition(c: Condition): ConditionInput {
     return {
-        patientId: c.subject?.reference?.replace("Patient/", "") ?? "",
-        encounterId: c.encounter?.reference?.replace("Encounter/", "") ?? "",
+        patientId: parseFhirId(c.subject?.reference, "Patient") ?? "",
+        encounterId: parseFhirId(c.encounter?.reference, "Encounter") ?? "",
         code: c.code?.text ?? c.code?.coding?.[0]?.display ?? "",
         icdCode: c.code?.coding?.find((x) => x.system === config.fhir.codeSystems.icd10 || x.system?.includes("icd-10"))?.code,
         category: (c.category?.[0]?.coding?.[0]?.code as ConditionInput["category"]) ?? "encounter-diagnosis",
@@ -1581,7 +1610,7 @@ export async function searchEncounters(params: EncounterSearchParams = {}): Prom
         }
         return encounters.map((enc) => {
             const ref = enc.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return {encounter: enc, patient: pid ? patientMap.get(pid) : undefined};
         });
     } catch {
@@ -1612,7 +1641,7 @@ export async function getRecentEncountersWithPatients(count = 6): Promise<Encoun
 
         return encounters.map((enc) => {
             const ref = enc.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return {encounter: enc, patient: pid ? patientMap.get(pid) : undefined};
         });
     } catch {
@@ -1739,9 +1768,10 @@ export async function searchAppointments(params: AppointmentSearchParams = {}): 
             else if (r.resourceType === "Appointment") appointments.push(r as Appointment);
         }
         return appointments.map((appt) => {
-            const pid = appt.participant
-                ?.find((p) => p.actor?.reference?.startsWith("Patient/"))
-                ?.actor?.reference?.slice(8);
+            const pid = parseFhirId(
+                appt.participant?.find((p) => parseFhirReference(p.actor?.reference)?.resourceType === "Patient")?.actor?.reference,
+                "Patient"
+            );
             return { appointment: appt, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -1838,14 +1868,15 @@ export async function fulfillAppointment(id: string): Promise<Appointment> {
 }
 
 export function getAppointmentPatientId(appt: Appointment): string | undefined {
-    return appt.participant
-        ?.find((p) => p.actor?.reference?.startsWith("Patient/"))
-        ?.actor?.reference?.slice(8);
+    return parseFhirId(
+        appt.participant?.find((p) => parseFhirReference(p.actor?.reference)?.resourceType === "Patient")?.actor?.reference,
+        "Patient"
+    );
 }
 
 export function getAppointmentPractitionerRefs(appt: Appointment): string[] {
     return (appt.participant ?? [])
-        .filter((p) => p.actor?.reference?.startsWith("Practitioner/"))
+        .filter((p) => parseFhirReference(p.actor?.reference)?.resourceType === "Practitioner")
         .map((p) => p.actor!.reference!);
 }
 
@@ -1977,8 +2008,8 @@ export function parseDischargeRx(m: MedicationRequest): DischargeRxInput {
     const ext    = m.extension?.find((e) => e.url === EXT_RX_STRUCTURED);
     const getExt = (key: string) => ext?.extension?.find((e) => e.url === key)?.valueString;
     return {
-        patientId:    m.subject?.reference?.replace("Patient/", "")   ?? "",
-        encounterId:  m.encounter?.reference?.replace("Encounter/", "") ?? "",
+        patientId:    parseFhirId(m.subject?.reference, "Patient")   ?? "",
+        encounterId:  parseFhirId(m.encounter?.reference, "Encounter") ?? "",
         drugName:     m.medicationCodeableConcept?.text ?? "",
         dose:         getExt("dose"),
         form:         getExt("form"),
@@ -2306,7 +2337,7 @@ export async function searchOrders(params: OrderSearchParams = {}): Promise<Serv
         }
         return orders.map((order) => {
             const ref = order.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { order, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -2408,8 +2439,8 @@ export function parseInpatientRx(m: MedicationRequest): InpatientRxInput {
     const ext    = m.extension?.find((e) => e.url === EXT_INPT_STRUCTURED);
     const getExt = (key: string) => ext?.extension?.find((e) => e.url === key)?.valueString;
     return {
-        patientId:   m.subject?.reference?.replace("Patient/", "")   ?? "",
-        encounterId: m.encounter?.reference?.replace("Encounter/", "") ?? "",
+        patientId:   parseFhirId(m.subject?.reference, "Patient")   ?? "",
+        encounterId: parseFhirId(m.encounter?.reference, "Encounter") ?? "",
         drugName:    m.medicationCodeableConcept?.text ?? "",
         dose:        getExt("dose"),
         route:       m.dosageInstruction?.[0]?.route?.text,
@@ -2602,8 +2633,8 @@ function buildProcedureBody(input: ProcedureRecordInput, id?: string): Procedure
 
 export function parseProcedureRecord(p: Procedure): ProcedureRecordInput {
     return {
-        patientId:      p.subject?.reference?.replace("Patient/", "")   ?? "",
-        encounterId:    p.encounter?.reference?.replace("Encounter/", "") ?? "",
+        patientId:      parseFhirId(p.subject?.reference, "Patient")   ?? "",
+        encounterId:    parseFhirId(p.encounter?.reference, "Encounter") ?? "",
         procedureName:  p.code?.text ?? p.code?.coding?.[0]?.display ?? "",
         status:         (p.status as ProcedureRecordInput["status"]) ?? "completed",
         performedStart: p.performedDateTime ?? p.performedPeriod?.start ?? "",
@@ -2614,7 +2645,7 @@ export function parseProcedureRecord(p: Procedure): ProcedureRecordInput {
         complication:   p.complication?.[0]?.text,
         statusReason:   (p as { statusReason?: { text?: string } }).statusReason?.text,
         notes:          p.note?.[0]?.text,
-        basedOnOrderId: p.basedOn?.[0]?.reference?.replace("ServiceRequest/", ""),
+        basedOnOrderId: parseFhirId(p.basedOn?.[0]?.reference, "ServiceRequest"),
     };
 }
 
@@ -2739,7 +2770,7 @@ export async function searchObservations(params: {
         }
         return observations.map((obs) => {
             const ref = obs.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { observation: obs, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -2786,7 +2817,7 @@ export async function searchMedications(params: {
         }
         return meds.map((med) => {
             const ref = med.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { medication: med, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -2829,7 +2860,7 @@ export async function searchConditionsWithPatients(params: {
         }
         return conditions.map((cond) => {
             const ref = cond.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { condition: cond, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -2895,8 +2926,8 @@ function buildImmunizationBody(input: ImmunizationInput, id?: string): Immunizat
 
 export function parseImmunization(imm: Immunization): ImmunizationInput {
     return {
-        patientId:      imm.patient?.reference?.replace("Patient/", "")    ?? "",
-        encounterId:    imm.encounter?.reference?.replace("Encounter/", ""),
+        patientId:      parseFhirId(imm.patient?.reference, "Patient")    ?? "",
+        encounterId:    parseFhirId(imm.encounter?.reference, "Encounter"),
         vaccineName:    imm.vaccineCode?.text ?? imm.vaccineCode?.coding?.[0]?.display ?? "",
         vaccineCode:    imm.vaccineCode?.coding?.[0]?.code,
         status:         (imm.status as ImmunizationInput["status"]) ?? "completed",
@@ -2993,7 +3024,7 @@ export async function searchImmunizations(params: {
         }
         return immunizations.map((imm) => {
             const ref = imm.patient?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { immunization: imm, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -3068,8 +3099,8 @@ function buildFlagBody(input: FlagInput, id?: string): Flag {
 
 export function parseFlag(f: Flag): FlagInput {
     return {
-        patientId:   f.subject?.reference?.replace("Patient/", "") ?? "",
-        encounterId: f.encounter?.reference?.replace("Encounter/", ""),
+        patientId:   parseFhirId(f.subject?.reference, "Patient") ?? "",
+        encounterId: parseFhirId(f.encounter?.reference, "Encounter"),
         code:        f.code?.text ?? f.code?.coding?.[0]?.display ?? "",
         category:    f.category?.[0]?.coding?.[0]?.code as FlagInput["category"],
         status:      (f.status as "active" | "inactive") ?? "active",
@@ -3149,7 +3180,7 @@ export async function searchFlags(params: {
         }
         return flags.map((flag) => {
             const ref = flag.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { flag, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -3329,7 +3360,7 @@ export async function searchDiagnosticReports(params: {
         }
         return reports.map((report) => {
             const ref = report.subject?.reference;
-            const pid = ref?.startsWith("Patient/") ? ref.slice(8) : undefined;
+            const pid = parseFhirId(ref, "Patient");
             return { report, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -3764,9 +3795,9 @@ function buildTaskBody(input: TaskFormInput, id?: string): Task {
 
 export function parseTask(t: Task): TaskFormInput {
     return {
-        patientId:   (t.for as { reference?: string })?.reference?.replace("Patient/", ""),
+        patientId:   parseFhirId((t.for as { reference?: string })?.reference, "Patient"),
         patientName: (t.for as { display?: string })?.display,
-        encounterId: t.encounter?.reference?.replace("Encounter/", ""),
+        encounterId: parseFhirId(t.encounter?.reference, "Encounter"),
         category:    t.code?.coding?.[0]?.code ?? "general",
         title:       t.description ?? "",
         note:        t.note?.[0]?.text,
@@ -4149,7 +4180,7 @@ export async function searchReferrals(params: {
 
         return referrals.map((ref) => {
             const subjectRef = ref.subject?.reference;
-            const pid = subjectRef?.startsWith("Patient/") ? subjectRef.slice(8) : undefined;
+            const pid = parseFhirId(subjectRef, "Patient");
             return { referral: ref, patient: pid ? patientMap.get(pid) : undefined };
         });
     } catch {
@@ -4394,7 +4425,7 @@ export function organizationToFormState(o: Organization): OrganizationFormState 
         name: o.name ?? "",
         type: o.type?.[0]?.coding?.[0]?.code ?? "",
         identifier: o.identifier?.[0]?.value ?? "",
-        partOfId: o.partOf?.reference?.replace("Organization/", "") ?? "",
+        partOfId: parseFhirId(o.partOf?.reference, "Organization") ?? "",
         partOfName: "",
         phone: o.telecom?.find((t) => t.system === "phone")?.value ?? "",
         email: o.telecom?.find((t) => t.system === "email")?.value ?? "",
@@ -4443,7 +4474,7 @@ export async function getPractitionerRoles(
         }
         return roles.map((role) => {
             const ref = role.organization?.reference;
-            const orgId = ref?.startsWith("Organization/") ? ref.slice(13) : undefined;
+            const orgId = parseFhirId(ref, "Organization");
             return { role, org: orgId ? orgs.get(orgId) : undefined };
         });
     } catch {
@@ -4470,7 +4501,7 @@ export async function getOrganizationPractitioners(
         }
         return roles.map((role) => {
             const ref = role.practitioner?.reference;
-            const pid = ref?.startsWith("Practitioner/") ? ref.slice(13) : undefined;
+            const pid = parseFhirId(ref, "Practitioner");
             return { role, practitioner: pid ? practs.get(pid) : undefined };
         });
     } catch {

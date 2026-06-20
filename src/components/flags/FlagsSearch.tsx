@@ -14,6 +14,7 @@ import {
 import {
   searchFlags, patientDisplayName, getPatientMRN,
   flagCategoryColor, flagStatusColor, FLAG_CATEGORY_DISPLAY,
+  parseFhirId,
 } from "@/lib/fhir-client"
 import type { FlagWithPatient } from "@/lib/fhir-client"
 import { StatusPill } from "@/components/ui/StatusPill"
@@ -97,8 +98,7 @@ export function FlagsSearch({ initialData }: Props) {
             <TableBody>
               {results.map(({ flag: f, patient }) => {
                 const mrn      = patient ? getPatientMRN(patient) : null
-                const patId    = f.subject?.reference?.startsWith("Patient/")
-                  ? f.subject.reference.slice(8) : undefined
+                const patId    = parseFhirId(f.subject?.reference, "Patient")
                 const href     = patId ? `/patients/${patId}` : undefined
                 const cat      = f.category?.[0]?.coding?.[0]?.code ?? ""
                 const catLabel = FLAG_CATEGORY_DISPLAY[cat] ?? f.category?.[0]?.text

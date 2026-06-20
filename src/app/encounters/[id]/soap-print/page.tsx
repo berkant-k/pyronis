@@ -11,6 +11,7 @@ import {
   getPatientMRN,
   getEncounterVisitId,
   parseSoapNote,
+  parseFhirId,
 } from "@/lib/fhir-client";
 import { PrintButton } from "@/components/encounters/PrintButton";
 import Link from "next/link";
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const enc = await getEncounter(id);
-    const pid = enc.subject?.reference?.startsWith("Patient/") ? enc.subject.reference.slice(8) : null;
+    const pid = parseFhirId(enc.subject?.reference, "Patient") ?? null;
     const patient = pid ? await getPatient(pid) : null;
     return { title: `SOAP Note — ${patient ? patientDisplayName(patient) : "Patient"} | Pyronis EMR` };
   } catch {
@@ -38,9 +39,7 @@ export default async function SoapPrintPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const patientId = encounter.subject?.reference?.startsWith("Patient/")
-    ? encounter.subject.reference.slice(8)
-    : null;
+  const patientId = parseFhirId(encounter.subject?.reference, "Patient") ?? null;
 
   const [patientRes, soapRes] = await Promise.allSettled([
     patientId ? getPatient(patientId) : Promise.resolve(null),

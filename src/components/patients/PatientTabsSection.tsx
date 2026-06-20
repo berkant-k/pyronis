@@ -11,7 +11,7 @@ import type {
 import {
   formatDate, formatDateTime,
   appointmentStatusColor, getEncounterVisitId,
-  getOrderCategory, orderStatusColor, orderPriorityColor,
+  getOrderCategory, orderStatusColor, orderPriorityColor, parseFhirId,
 } from "@/lib/fhir-client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
@@ -427,7 +427,7 @@ function OrdersTab({ orders, patientId, patientInfo }: { orders: ServiceRequest[
                 const status   = order.status ?? "unknown"
                 const priority = order.priority ?? "routine"
                 const encRef   = order.encounter?.reference
-                const encId    = encRef?.startsWith("Encounter/") ? encRef.slice(10) : undefined
+                const encId    = parseFhirId(encRef, "Encounter")
                 return (
                   <TableRow key={order.id} className="group">
                     <TableCell>

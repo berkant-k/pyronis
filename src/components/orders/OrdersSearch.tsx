@@ -28,6 +28,7 @@ import {
   patientDisplayName,
   getPatientMRN,
   formatDate,
+  parseFhirId,
 } from "@/lib/fhir-client"
 import type { ServiceRequestWithPatient, OrderCategory } from "@/lib/fhir-client"
 import { StatusPill } from "@/components/ui/StatusPill"
@@ -128,9 +129,8 @@ export function OrdersSearch() {
                 const priority = order.priority ?? "routine"
                 const mrn      = patient ? getPatientMRN(patient) : null
                 const encRef   = order.encounter?.reference
-                const encId    = encRef?.startsWith("Encounter/") ? encRef.slice(10) : undefined
-                const patId    = order.subject?.reference?.startsWith("Patient/")
-                  ? order.subject.reference.slice(8) : undefined
+                const encId    = parseFhirId(encRef, "Encounter")
+                const patId    = parseFhirId(order.subject?.reference, "Patient")
                 const href = encId ? `/encounters/${encId}` : patId ? `/patients/${patId}` : undefined
 
                 return (

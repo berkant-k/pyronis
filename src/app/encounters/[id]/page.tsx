@@ -32,6 +32,7 @@ import {
   isDischargeRx,
   isInpatientRx,
   patientDisplayName,
+  parseFhirId,
 } from "@/lib/fhir-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -89,10 +90,7 @@ export default async function EncounterDetailPage({
     notFound();
   }
 
-  // Resolve patient from subject reference
-  const patientId = encounter.subject?.reference?.startsWith("Patient/")
-    ? encounter.subject.reference.slice(8)
-    : null;
+  const patientId = parseFhirId(encounter.subject?.reference, "Patient") ?? null;
 
   const [patientRes, obsRes, condRes, medRes, soapRes, ordersRes, dischargeRxRes, inpatientRxRes, adminsRes, procOrdersRes, procsRes, immRes, drRes, referralsRes, qrRes, nonVitalObsRes] = await Promise.allSettled([
     patientId ? getPatient(patientId) : Promise.resolve(null as Patient | null),

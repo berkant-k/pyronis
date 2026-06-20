@@ -4,7 +4,6 @@
     "alphabet": "0123456789"
   },
   "fhir": {
-    "defaultUrl": "http://localhost:5826/fhir/r4b",
     "storageKey": "pyronis_fhir_base_url",
     "profiles": {
       "patient": "https://fhir.pyronis.health/StructureDefinition/PatientWithIdentifierProfile"
@@ -168,7 +167,6 @@
     }
   },
   "empi": {
-    "defaultUrl": "https://empi-dev.tiga.health/fhir",
     "storageKey": "pyronis_empi_base_url"
   },
   "auth": {

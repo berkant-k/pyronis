@@ -14,7 +14,7 @@ import {
 import {
   searchDiagnosticReports, patientDisplayName, getPatientMRN, formatDate,
   diagnosticReportStatusColor, diagnosticReportCategoryColor,
-  REPORT_CATEGORY_DISPLAY, REPORT_STATUS_DISPLAY,
+  REPORT_CATEGORY_DISPLAY, REPORT_STATUS_DISPLAY, parseFhirId,
 } from "@/lib/fhir-client"
 import type { DiagnosticReportWithPatient } from "@/lib/fhir-client"
 import { DiagnosticReportFormDialog } from "./DiagnosticReportFormDialog"
@@ -128,8 +128,7 @@ export function DiagnosticReportsSearch({ initialData }: Props) {
             <TableBody>
               {results.map(({ report: r, patient }) => {
                 const mrn    = patient ? getPatientMRN(patient) : null
-                const patId  = r.subject?.reference?.startsWith("Patient/")
-                  ? r.subject.reference.slice(8) : undefined
+                const patId  = parseFhirId(r.subject?.reference, "Patient")
                 const cat    = r.category?.[0]?.coding?.[0]?.code ?? ""
                 const catCls = diagnosticReportCategoryColor(cat)
                 const stsCls = diagnosticReportStatusColor(r.status ?? "")
