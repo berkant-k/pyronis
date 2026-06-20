@@ -183,7 +183,7 @@ A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **Reac
 ## Prerequisites
 
 - **Node.js** 20+ and npm
-- A running **FHIR server** — [fhir-candle](https://github.com/GinoCanessa/fhir-candle) is the tested and recommended for testing purposes. 
+- A running **FHIR server** — [fhir-candle](https://github.com/FHIR/fhir-candle) is the tested and recommended for testing purposes. 
 
 Start a local fhir-candle as .Net tool:
 
