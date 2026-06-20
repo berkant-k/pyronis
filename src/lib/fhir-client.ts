@@ -782,7 +782,11 @@ export async function createPatient(input: NewPatientInput): Promise<Patient> {
 
 export async function updatePatient(id: string, input: NewPatientInput): Promise<Patient> {
     const existing = await getPatient(id);
-    const body = buildPatientBody(input, id);
+    // Preserve the existing MRN if the form is empty, or generate one if the
+    // patient was created without an MRN (e.g. imported from eMPI).
+    const existingMrn = existing.identifier?.find((i) => i.system === MRN_SYSTEM)?.value;
+    const mrn = input.mrn || existingMrn || await generateNextMRN();
+    const body = buildPatientBody({ ...input, mrn }, id);
     if (existing.photo?.length) body.photo = existing.photo;
     const res = await fhirRequest(`${getFhirBaseUrl()}/Patient/${id}`, {
         method: "PUT",

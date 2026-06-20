@@ -39,6 +39,7 @@
 | 20 | Header breadcrumbs + notification center — path-aware breadcrumbs with home icon; bell dropdown with unread badge, mark-all-read, dismiss | Jun 2026 |
 | 33 | Emergency contact quick access — RelatedPerson contacts (codes C/EP/N) shown as a strip in the patient header card with name, relationship, tel: link | Jun 2026 |
 | 38 | Encounter search by practitioner — `practitionerQuery` added to `EncounterSearchParams` and `searchEncounters`; practitioner name input in `EncounterSearch` filter bar | Jun 2026 |
+| 76 | Auto-assign MRN on edit — `updatePatient` generates a new MRN when the existing resource has none and the form field is empty | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
