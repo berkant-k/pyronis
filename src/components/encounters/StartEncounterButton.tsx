@@ -57,6 +57,13 @@ const ENCOUNTER_TYPES = [
   "Medication review",
 ]
 
+const SERVICE_TYPES = [
+  "General Practice", "Cardiology", "Dermatology", "Endocrinology",
+  "Gastroenterology", "Nephrology", "Neurology", "Obstetrics & Gynecology",
+  "Orthopedics", "Pediatrics", "Psychiatry", "Pulmonology",
+  "Radiology", "Rheumatology", "Surgery", "Urology",
+]
+
 // ─── Patient info card ────────────────────────────────────────────────────────
 
 function PatientInfoCard({ patient }: { patient: Patient }) {
@@ -239,6 +246,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
   const [open, setOpen] = useState(false)
   const [classCode, setClassCode] = useState("")
   const [typeText, setTypeText] = useState("")
+  const [serviceTypeText, setServiceTypeText] = useState("")
   const [reasonText, setReasonText] = useState("")
   const [practitioners, setPractitioners] = useState<Practitioner[]>([])
   const [loading, setLoading] = useState(false)
@@ -247,6 +255,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
   function reset() {
     setClassCode("")
     setTypeText("")
+    setServiceTypeText("")
     setReasonText("")
     setPractitioners([])
     setError(null)
@@ -272,6 +281,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
         classCode: cls.code,
         classDisplay: cls.display,
         typeText: typeText || undefined,
+        serviceType: serviceTypeText || undefined,
         reasonText: reasonText.trim() || undefined,
         periodStart: new Date().toISOString(),
         participantIds: practitioners.map((p) => p.id!).filter(Boolean),
@@ -339,6 +349,21 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
                 <SelectContent>
                   {ENCOUNTER_TYPES.map((t) => (
                     <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Service type */}
+            <div className="space-y-1.5">
+              <Label htmlFor="enc-service">Service type</Label>
+              <Select value={serviceTypeText} onValueChange={(v) => setServiceTypeText(v ?? "")}>
+                <SelectTrigger id="enc-service" className="w-full">
+                  <SelectValue placeholder="Select service (optional)…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_TYPES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

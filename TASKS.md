@@ -31,6 +31,11 @@
 | 69 | Add nanoid-generated identifiers to all 20 FHIR resource create functions (17 resource types) | Jun 2026 |
 | 71 | DiagnosticReport categories — add REF (Referral) and GEN (Genetics) to `REPORT_CATEGORY_DISPLAY` | Jun 2026 |
 | 72 | Loading skeleton consistency — replace inline skeletons in `practitioners/loading.tsx` and `organizations/loading.tsx` with `ListPageSkeleton` | Jun 2026 |
+| 49 | Sidebar active state — consistent `pathname.startsWith()` for nav items, exact match for system items | Jun 2026 |
+| 73 | Patient photo upload — `Patient.photo[0]` with file picker, drag-and-drop, webcam capture, resize preview (`PatientPhotoDialog.tsx`) | Jun 2026 |
+| 74 | Immunization form — CVX code selector with auto-populate from vaccine name + `series` field (`protocolApplied.series`) | Jun 2026 |
+| 75 | DiagnosticReport attachment support — `presentedForm` multi-file upload (PDF/image) in `DiagnosticReportFormDialog` | Jun 2026 |
+| 36 | Encounter service type — added `serviceType` to `NewEncounterInput`, `createEncounter`, and `StartEncounterButton` dialog | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -79,12 +84,12 @@
 | 33 | Emergency contact quick access on patient header                                       | Low | — | §24.18 |
 | 34 | In-browser preview for PDF / image attachments                                         | Low | — | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | — | §24.5 |
-| 36 | Encounter type and service type capture                                                | Low | — | §24.7 |
+| ~~36~~ | ~~Encounter type and service type capture~~ | ~~Low~~ | — | ✅ Done |
 | 37 | Multi-provider encounter participation                                                 | Low | — | §24.7 |
 | 38 | Encounter search by practitioner                                                       | Low | — | §24.7 |
-| 73 | Patient photo upload — `Patient.photo[0]` field with file picker and webcam capture in `PatientForm.tsx` | Low | — | §24.15 |
-| 74 | Immunization form — add CVX code selector and `series` name field (`protocolApplied.series`) | Low | — | §24.14 |
-| 75 | DiagnosticReport attachment support — `presentedForm` field with file upload in `DiagnosticReportFormDialog` | Low | — | §24.5 |
+| ~~73~~ | ~~Patient photo upload — `Patient.photo[0]` field with file picker and webcam capture~~ | ~~Low~~ | — | ✅ Done |
+| ~~74~~ | ~~Immunization form — add CVX code selector and `series` name field (`protocolApplied.series`)~~ | ~~Low~~ | — | ✅ Done |
+| ~~75~~ | ~~DiagnosticReport attachment support — `presentedForm` field with file upload in `DiagnosticReportFormDialog`~~ | ~~Low~~ | — | ✅ Done |
 
 ---
 
@@ -102,7 +107,7 @@
 | 46 | Referral receiving organization — replace free-text specialty | Low | #9 | §22 |
 | 47 | Icon-only buttons — `aria-label` and `Tooltip` | Low | — | §18.10 |
 | 48 | Form Arabic name section divider labels | Low | — | §18.9 |
-| 49 | Sidebar active state — consistent active-page rule | Low | — | §18.11 |
+| ~~49~~ | ~~Sidebar active state — consistent active-page rule~~ | ~~Low~~ | — | ✅ Done |
 | 50 | Document versioning and referral document linking | Low | — | §9 |
 | 51 | Care plans and patient goals (`CarePlan` + `Goal` resources) | High | #9 | §5 |
 | 52 | Bed management and ADT workflow (`Location` + `Encounter.hospitalization`) | High | — | §8 |
@@ -146,7 +151,7 @@ All other tasks are unblocked and can be started independently.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 30 | 1, 10, 12, 15, 19, 20, 25, 26, 27, 28, 29, 30, 33, 34, 36, 37, 38, 40, 41, 43, 47, 48, 49, 50, 60, 62, 73, 74, 75, 66 |
+| Low | 26 | 1, 10, 12, 15, 19, 20, 25, 26, 27, 28, 29, 30, 33, 34, 36, 37, 38, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
 | Medium | 20 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65 |
 | High | 10 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64 |
 
@@ -172,9 +177,5 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 30 | Order → DiagnosticReport result linking | 🟡 Medium |
 | 33 | Emergency contact quick access on patient header | 🟡 Medium |
 | 34 | In-browser preview for PDF / image attachments | 🟡 Medium |
-| 36 | Encounter type and service type capture | 🟡 Medium |
 | 37 | Multi-provider encounter participation | 🟡 Medium |
 | 38 | Encounter search by practitioner | 🟡 Medium |
-| 73 | Patient photo upload (`Patient.photo`) | 🟡 Medium |
-| 74 | Immunization CVX code selector + series field | 🟡 Medium |
-| 75 | DiagnosticReport attachment (`presentedForm`) support | 🟡 Medium |

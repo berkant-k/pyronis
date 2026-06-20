@@ -1061,6 +1061,7 @@ export interface NewEncounterInput {
     classCode: string;
     classDisplay: string;
     typeText?: string;
+    serviceType?: string;
     reasonText?: string;
     periodStart: string;
     participantIds?: string[];
@@ -1093,6 +1094,7 @@ export async function createEncounter(input: NewEncounterInput): Promise<Encount
         subject: {reference: `Patient/${input.patientId}`},
         period: {start: input.periodStart},
         ...(input.typeText ? {type: [{text: input.typeText}]} : {}),
+        ...(input.serviceType ? {serviceType: {text: input.serviceType}} : {}),
         ...(input.reasonText ? {reasonCode: [{text: input.reasonText}]} : {}),
         ...(input.participantIds?.length ? {
             participant: input.participantIds.map((pid) => ({
