@@ -200,6 +200,12 @@ The ESLint rule `react-hooks/set-state-in-effect` bans synchronous `setState` ca
 **`fhir-client.ts` and shared server/client modules — never import client-only libraries statically.**
 Shared modules (no `"use client"` directive) are bundled for both server and client. A static `import { x } from "some-browser-lib"` at the top of such a file will break server rendering or corrupt the module for all consumers. Use a dynamic `import("lib").then(...)` gated behind `typeof window !== "undefined"`.
 
+### URL resolution — use `resolveStoredUrl`, never inline the pattern
+The three-step "localStorage → env var → throw" URL resolution is implemented once in `resolveStoredUrl(storageKey, envVar, label)` in `src/lib/fhir-client.ts`. Any code that needs to read a configurable server URL **must** call this helper — never duplicate the pattern inline.
+- `getFhirBaseUrl()` and `getEmpiBaseUrl()` are both thin wrappers around it.
+- Client components that display or refresh the FHIR URL should call `getFhirBaseUrl()` directly instead of re-implementing the lookup.
+- If a new server URL is added (e.g. a terminology server), add its storage key to `config.json` and expose it via a similarly thin wrapper — do not copy the if-chain again.
+
 ### Row action buttons (edit / delete)
 - Wrap the row in `className="... group"` and action buttons in `className="opacity-0 group-hover:opacity-100 transition-opacity"`.
 - Use `Pencil` (edit) and `Trash2` (delete) from `lucide-react`; show `Loader2 animate-spin` while in-flight.

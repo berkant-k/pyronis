@@ -1,15 +1,11 @@
 import type { Bundle, CapabilityStatement, Patient } from "@medplum/fhirtypes";
-import { patientToFormState, QID_SYSTEM, type PatientFormState } from "./fhir-client";
+import { patientToFormState, QID_SYSTEM, resolveStoredUrl, type PatientFormState } from "./fhir-client";
 import config from "./config.json";
 import { authHeaders } from "./auth";
 export const EMPI_STORAGE_KEY = config.empi.storageKey;
 
 export function getEmpiBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem(EMPI_STORAGE_KEY);
-    if (stored?.trim()) return stored.trim();
-  }
-  return process.env.NEXT_PUBLIC_EMPI_BASE_URL ?? config.empi.defaultUrl;
+  return resolveStoredUrl(EMPI_STORAGE_KEY, process.env.NEXT_PUBLIC_EMPI_BASE_URL, "eMPI");
 }
 
 export function saveEmpiBaseUrl(url: string): void {

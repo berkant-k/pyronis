@@ -54,12 +54,37 @@ const PRACTITIONER_ROLE_ID_SYSTEM  = config.fhir.identifierSystems.practitionerR
 
 export const FHIR_STORAGE_KEY = config.fhir.storageKey;
 
-export function getFhirBaseUrl(): string {
+// Parses a FHIR reference string into its resource type and logical ID.
+// Handles both relative ("Patient/123") and absolute ("https://server/fhir/Patient/123") forms.
+export function parseFhirReference(reference: string | undefined | null): { resourceType: string; id: string } | null {
+    if (!reference) return null;
+    const segments = reference.split("/");
+    const id = segments.at(-1);
+    const resourceType = segments.at(-2);
+    if (!id || !resourceType) return null;
+    return { resourceType, id };
+}
+
+// Extracts the logical ID from a FHIR reference, optionally asserting the resource type.
+// Returns undefined if the reference is absent or the type doesn't match.
+export function parseFhirId(reference: string | undefined | null, expectedType?: string): string | undefined {
+    const parsed = parseFhirReference(reference);
+    if (!parsed) return undefined;
+    if (expectedType && parsed.resourceType !== expectedType) return undefined;
+    return parsed.id;
+}
+
+export function resolveStoredUrl(storageKey: string, envVar: string | undefined, label: string): string {
     if (typeof window !== "undefined") {
-        const stored = localStorage.getItem(FHIR_STORAGE_KEY);
+        const stored = localStorage.getItem(storageKey);
         if (stored?.trim()) return stored.trim();
     }
-    return process.env.NEXT_PUBLIC_FHIR_BASE_URL ?? config.fhir.defaultUrl;
+    if (envVar?.trim()) return envVar.trim();
+    throw new Error(`${label} base URL not set`);
+}
+
+export function getFhirBaseUrl(): string {
+    return resolveStoredUrl(FHIR_STORAGE_KEY, process.env.NEXT_PUBLIC_FHIR_BASE_URL, "FHIR");
 }
 
 export function saveFhirBaseUrl(url: string): void {
@@ -166,7 +191,11 @@ async function fhirRequest(url: string, init: RequestInit): Promise<Response> {
 async function fhirFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
     const url = new URL(`${getFhirBaseUrl()}/${path}`);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fhirRequest(url.toString(), {headers: await authHeaders({Accept: "application/fhir+json"})});
+    console.log("FHIR Request for: ", url.toString());
+    const res = await fhirRequest(url.toString(),
+        {headers: await authHeaders({Accept: "application/fhir+json"})}
+    );
+    console.log("FHIR Response for: ", url.toString()+","+res.status);
     if (!res.ok) throw new Error(`FHIR request failed: ${res.status} ${res.statusText}`);
     return res.json() as Promise<T>;
 }

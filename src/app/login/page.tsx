@@ -9,26 +9,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { setAuthToken, parseJwtClaims, NO_AUTH_SENTINEL } from "@/lib/auth";
 import { FhirSettings } from "@/components/settings/FhirSettings";
-import appConfig from "@/lib/config.json";
-
-function readFhirUrl(): string {
-  if (typeof window !== "undefined") {
-    const override = localStorage.getItem(appConfig.fhir.storageKey);
-    if (override) return override;
-  }
-  return process.env.NEXT_PUBLIC_FHIR_BASE_URL ?? appConfig.fhir.defaultUrl;
-}
+import { getFhirBaseUrl } from "@/lib/fhir-client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
-  const [fhirUrl, setFhirUrl] = useState(() => readFhirUrl());
+  const [fhirUrl, setFhirUrl] = useState(() => getFhirBaseUrl());
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   function handleSettingsOpenChange(open: boolean) {
     setSettingsOpen(open);
-    if (!open) setFhirUrl(readFhirUrl());
+    if (!open) setFhirUrl(getFhirBaseUrl());
   }
 
   function handleSubmit(e: React.FormEvent) {
