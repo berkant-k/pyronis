@@ -24,6 +24,7 @@ export function GlobalPatientSearch() {
   const [isPending, startTransition] = useTransition()
   const inputRef    = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const portalRef   = useRef<HTMLDivElement>(null)
   const latestQuery = useRef("")
   const router = useRouter()
 
@@ -40,10 +41,14 @@ export function GlobalPatientSearch() {
     return () => document.removeEventListener("keydown", onKeyDown)
   }, [])
 
-  // Click outside closes the dropdown
+  // Click outside closes the dropdown — also exclude the portal so clicks on
+  // results are not treated as "outside" before the click event fires.
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      const insideContainer = containerRef.current?.contains(target)
+      const insidePortal    = portalRef.current?.contains(target)
+      if (!insideContainer && !insidePortal) {
         setOpen(false)
       }
     }
@@ -107,6 +112,7 @@ export function GlobalPatientSearch() {
 
   const dropdownContent = showDropdown && containerRect && createPortal(
     <div
+      ref={portalRef}
       style={{
         position: "fixed",
         top: containerRect.bottom + 6,

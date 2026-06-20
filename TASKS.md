@@ -36,6 +36,7 @@
 | 74 | Immunization form — CVX code selector with auto-populate from vaccine name + `series` field (`protocolApplied.series`) | Jun 2026 |
 | 75 | DiagnosticReport attachment support — `presentedForm` multi-file upload (PDF/image) in `DiagnosticReportFormDialog` | Jun 2026 |
 | 36 | Encounter service type — added `serviceType` to `NewEncounterInput`, `createEncounter`, and `StartEncounterButton` dialog | Jun 2026 |
+| 20 | Header breadcrumbs + notification center — path-aware breadcrumbs with home icon; bell dropdown with unread badge, mark-all-read, dismiss | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -68,7 +69,7 @@
 | 17 | Immunization schedule recommendations and contraindication checking                    | Medium | — | §12 |
 | ~~18~~ | ~~Unified `StatusPill` component~~ | ~~Low~~ | — | ✅ Done |
 | 19 | Empty states — add icon, descriptive subtitle, and CTA button                          | Low | — | §18.6 |
-| 20 | Header breadcrumbs and notification center                                             | Low | — | §18.7 |
+| ~~20~~ | ~~Header breadcrumbs and notification center~~ | ~~Low~~ | — | ✅ Done |
 | ~~21~~ | ~~Encounter page — SOAP-first layout with accordion or tabs below~~ | ~~Medium~~ | — | ✅ Done |
 | 22 | UI language switching — English / Arabic via `next-intl`                               | High | — | §20.1 |
 | 23 | Full RTL layout — sidebar flip, logical CSS properties                                 | Medium | #22 | §20.2 |
@@ -168,7 +169,6 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 12 | Duplicate order detection | 🟡 Medium |
 | 15 | Lab / radiology order print form | 🟡 Medium |
 | 19 | Empty states — icon, subtitle, CTA | 🟡 Medium |
-| 20 | Header breadcrumbs and notification center | 🟡 Medium |
 | 25 | Resource `_history` audit timeline | 🟡 Medium |
 | 26 | Patient lists and care team cohorts | 🟡 Medium |
 | 27 | Appointment waitlist | 🟡 Medium |
