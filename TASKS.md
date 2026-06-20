@@ -38,6 +38,7 @@
 | 36 | Encounter service type — added `serviceType` to `NewEncounterInput`, `createEncounter`, and `StartEncounterButton` dialog | Jun 2026 |
 | 20 | Header breadcrumbs + notification center — path-aware breadcrumbs with home icon; bell dropdown with unread badge, mark-all-read, dismiss | Jun 2026 |
 | 33 | Emergency contact quick access — RelatedPerson contacts (codes C/EP/N) shown as a strip in the patient header card with name, relationship, tel: link | Jun 2026 |
+| 38 | Encounter search by practitioner — `practitionerQuery` added to `EncounterSearchParams` and `searchEncounters`; practitioner name input in `EncounterSearch` filter bar | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -83,7 +84,6 @@
 | 34 | In-browser preview for PDF / image attachments                                         | Low | — | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | — | §24.5 |
 | 37 | Multi-provider encounter participation                                                 | Low | — | §24.7 |
-| 38 | Encounter search by practitioner                                                       | Low | — | §24.7 |
 
 ---
 
@@ -144,7 +144,7 @@ All other tasks are unblocked and can be started independently.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 23 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 38, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
+| Low | 22 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
 | Medium | 21 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65 |
 | High | 12 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64 |
 
@@ -169,4 +169,3 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 30 | Order → DiagnosticReport result linking | 🟡 Medium |
 | 34 | In-browser preview for PDF / image attachments | 🟡 Medium |
 | 37 | Multi-provider encounter participation | 🟡 Medium |
-| 38 | Encounter search by practitioner | 🟡 Medium |

@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Loader2, Calendar, X } from "lucide-react";
+import { Search, Loader2, Calendar, X, Stethoscope } from "lucide-react";
 
 const STATUSES = [
   { value: "in-progress", label: "In Progress" },
@@ -78,20 +78,22 @@ export function EncounterSearch() {
   const router = useRouter();
 
   const [patientQuery, setPatientQuery] = useState("");
+  const [practitionerQuery, setPractitionerQuery] = useState("");
   const [status, setStatus] = useState("");
   const [classCode, setClassCode] = useState("");
   const [encounters, setEncounters] = useState<EncounterWithPatient[]>([]);
   const [loading, setLoading] = useState(true);
 
   const keyRef = useRef(0);
-  const latestRef = useRef({ patientQuery: "", status: "", classCode: "" });
+  const latestRef = useRef({ patientQuery: "", practitionerQuery: "", status: "", classCode: "" });
 
-  function runSearch(pq: string, st: string, cc: string) {
+  function runSearch(pq: string, prq: string, st: string, cc: string) {
     const key = ++keyRef.current;
-    latestRef.current = { patientQuery: pq, status: st, classCode: cc };
+    latestRef.current = { patientQuery: pq, practitionerQuery: prq, status: st, classCode: cc };
     setLoading(true);
     searchEncounters({
       patientQuery: pq.trim() || undefined,
+      practitionerQuery: prq.trim() || undefined,
       status: st || undefined,
       classCode: cc || undefined,
     })
@@ -108,31 +110,40 @@ export function EncounterSearch() {
 
   // Initial load
   useEffect(() => {
-    const t = setTimeout(() => runSearch("", "", ""), 0);
+    const t = setTimeout(() => runSearch("", "", "", ""), 0);
     return () => clearTimeout(t);
   }, []);
 
   // Status / class filters — immediate
   useEffect(() => {
-    const { patientQuery: pq } = latestRef.current;
-    const t = setTimeout(() => runSearch(pq, status, classCode), 0);
+    const { patientQuery: pq, practitionerQuery: prq } = latestRef.current;
+    const t = setTimeout(() => runSearch(pq, prq, status, classCode), 0);
     return () => clearTimeout(t);
   }, [status, classCode]);
 
   // Patient text — debounced
   useEffect(() => {
     const t = setTimeout(() => {
-      const { status: st, classCode: cc } = latestRef.current;
-      runSearch(patientQuery, st, cc);
+      const { practitionerQuery: prq, status: st, classCode: cc } = latestRef.current;
+      runSearch(patientQuery, prq, st, cc);
     }, 400);
     return () => clearTimeout(t);
   }, [patientQuery]);
 
+  // Practitioner text — debounced
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const { patientQuery: pq, status: st, classCode: cc } = latestRef.current;
+      runSearch(pq, practitionerQuery, st, cc);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [practitionerQuery]);
 
-  const hasFilters = Boolean(patientQuery || status || classCode);
+  const hasFilters = Boolean(patientQuery || practitionerQuery || status || classCode);
 
   function clearFilters() {
     setPatientQuery("");
+    setPractitionerQuery("");
     setStatus("");
     setClassCode("");
   }
@@ -141,7 +152,7 @@ export function EncounterSearch() {
     <div className="space-y-4">
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[220px] flex-1">
+        <div className="relative min-w-[200px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={patientQuery}
@@ -156,6 +167,27 @@ export function EncounterSearch() {
               onClick={() => setPatientQuery("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Clear patient search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="relative min-w-[200px] flex-1">
+          <Stethoscope className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={practitionerQuery}
+            onChange={(e) => setPractitionerQuery(e.target.value)}
+            placeholder="Search by practitioner name…"
+            className="pl-9 pr-8"
+            autoComplete="off"
+          />
+          {practitionerQuery && (
+            <button
+              type="button"
+              onClick={() => setPractitionerQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Clear practitioner search"
             >
               <X className="h-3.5 w-3.5" />
             </button>
