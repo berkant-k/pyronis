@@ -1526,13 +1526,14 @@ export async function getRecentPatients(count = 8): Promise<Patient[]> {
 
 export interface EncounterSearchParams {
     patientQuery?: string;
+    practitionerQuery?: string;
     status?: string;
     classCode?: string;
     count?: number;
 }
 
 export async function searchEncounters(params: EncounterSearchParams = {}): Promise<EncounterWithPatient[]> {
-    const {patientQuery, status, classCode, count = 50} = params;
+    const {patientQuery, practitionerQuery, status, classCode, count = 50} = params;
 
     const fhirParams: Record<string, string> = {
         _sort: "-date",
@@ -1549,6 +1550,16 @@ export async function searchEncounters(params: EncounterSearchParams = {}): Prom
         fhirParams.patient = knownPatients
             .slice(0, 20)
             .map((p) => `Patient/${p.id}`)
+            .join(",");
+    }
+
+    if (practitionerQuery?.trim()) {
+        const practitioners = await searchPractitioners(practitionerQuery.trim());
+        if (practitioners.length === 0) return [];
+        fhirParams.participant = practitioners
+            .slice(0, 20)
+            .filter((p) => p.id)
+            .map((p) => `Practitioner/${p.id}`)
             .join(",");
     }
 
