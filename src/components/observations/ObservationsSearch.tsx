@@ -14,6 +14,7 @@ import {
 import {
   searchObservations, getObservationName, formatObservationValue,
   patientDisplayName, getPatientMRN, formatDateTime,
+  parseFhirId,
 } from "@/lib/fhir-client"
 import type { ObservationWithPatient } from "@/lib/fhir-client"
 
@@ -116,10 +117,9 @@ export function ObservationsSearch({ initialData }: Props) {
             <TableBody>
               {results.map(({ observation: obs, patient }) => {
                 const mrn   = patient ? getPatientMRN(patient) : null
-                const patId = obs.subject?.reference?.startsWith("Patient/")
-                  ? obs.subject.reference.slice(8) : undefined
+                const patId = parseFhirId(obs.subject?.reference, "Patient")
                 const encRef = obs.encounter?.reference
-                const encId  = encRef?.startsWith("Encounter/") ? encRef.slice(10) : undefined
+                const encId  = parseFhirId(encRef, "Encounter")
                 const href   = encId ? `/encounters/${encId}` : patId ? `/patients/${patId}` : undefined
                 const cat    = obs.category?.[0]?.coding?.[0]?.code ?? ""
                 const status = obs.status ?? "unknown"

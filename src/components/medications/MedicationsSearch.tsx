@@ -14,6 +14,7 @@ import {
 import {
   searchMedications, isDischargeRx, isInpatientRx,
   patientDisplayName, getPatientMRN, formatDate,
+  parseFhirId,
 } from "@/lib/fhir-client"
 import type { MedicationRequestWithPatient } from "@/lib/fhir-client"
 
@@ -130,10 +131,9 @@ export function MedicationsSearch({ initialData }: Props) {
             <TableBody>
               {results.map(({ medication: med, patient }) => {
                 const mrn      = patient ? getPatientMRN(patient) : null
-                const patId    = med.subject?.reference?.startsWith("Patient/")
-                  ? med.subject.reference.slice(8) : undefined
+                const patId    = parseFhirId(med.subject?.reference, "Patient")
                 const encRef   = med.encounter?.reference
-                const encId    = encRef?.startsWith("Encounter/") ? encRef.slice(10) : undefined
+                const encId    = parseFhirId(encRef, "Encounter")
                 const href     = encId ? `/encounters/${encId}` : patId ? `/patients/${patId}` : undefined
                 const status   = med.status ?? "unknown"
                 const statusCls = MED_STATUS_COLORS[status] ?? "bg-gray-50 text-gray-600 border-gray-200"

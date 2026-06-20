@@ -15,6 +15,7 @@ import {
   getAppointmentPractitionerRefs,
   practitionerDisplayName,
   getPractitionerQualification,
+  parseFhirId,
 } from "@/lib/fhir-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -75,7 +76,7 @@ export default async function AppointmentDetailPage({ params }: { params: Promis
 
   const [patientResult, ...practitionerResults] = await Promise.allSettled([
     patientId ? getPatient(patientId) : Promise.reject(new Error("no patient")),
-    ...practitionerRefs.map((ref) => getPractitioner(ref.replace("Practitioner/", ""))),
+    ...practitionerRefs.map((ref) => getPractitioner(parseFhirId(ref, "Practitioner") ?? ref)),
   ]);
 
   const patient = patientResult.status === "fulfilled" ? patientResult.value : undefined;

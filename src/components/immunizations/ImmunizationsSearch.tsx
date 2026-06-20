@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import {
   searchImmunizations, patientDisplayName, getPatientMRN, formatDate, immunizationStatusColor,
+  parseFhirId,
 } from "@/lib/fhir-client"
 import type { ImmunizationWithPatient } from "@/lib/fhir-client"
 import { StatusPill } from "@/components/ui/StatusPill"
@@ -96,10 +97,9 @@ export function ImmunizationsSearch({ initialData }: Props) {
             <TableBody>
               {results.map(({ immunization: imm, patient }) => {
                 const mrn       = patient ? getPatientMRN(patient) : null
-                const patId     = imm.patient?.reference?.startsWith("Patient/")
-                  ? imm.patient.reference.slice(8) : undefined
+                const patId     = parseFhirId(imm.patient?.reference, "Patient")
                 const encRef    = imm.encounter?.reference
-                const encId     = encRef?.startsWith("Encounter/") ? encRef.slice(10) : undefined
+                const encId     = parseFhirId(encRef, "Encounter")
                 const href      = encId ? `/encounters/${encId}` : patId ? `/patients/${patId}` : undefined
                 const statusCls = immunizationStatusColor(imm.status ?? "")
                 const vaccine   = imm.vaccineCode?.text ?? imm.vaccineCode?.coding?.[0]?.display ?? "—"

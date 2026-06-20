@@ -10,6 +10,7 @@ import {
   formatDateTime,
   getPatientMRN,
   getEncounterVisitId,
+  parseFhirId,
 } from "@/lib/fhir-client";
 import { PrintButton } from "@/components/encounters/PrintButton";
 
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const [, patient] = await Promise.all([
       getEncounter(id),
       getEncounter(id).then((e) => {
-        const pid = e.subject?.reference?.startsWith("Patient/") ? e.subject.reference.slice(8) : null;
+        const pid = parseFhirId(e.subject?.reference, "Patient") ?? null;
         return pid ? getPatient(pid) : null;
       }),
     ]);
@@ -39,9 +40,7 @@ export default async function DischargePrescriptionPage({ params }: { params: Pr
     notFound();
   }
 
-  const patientId = encounter.subject?.reference?.startsWith("Patient/")
-    ? encounter.subject.reference.slice(8)
-    : null;
+  const patientId = parseFhirId(encounter.subject?.reference, "Patient") ?? null;
 
   const [patientRes, rxRes] = await Promise.allSettled([
     patientId ? getPatient(patientId) : Promise.resolve(null),

@@ -60,31 +60,31 @@
 
 ## 🟡 Medium Priority
 
-| #  | Task                                                                                   | Effort | Blocked by | Ref |
-|----|----------------------------------------------------------------------------------------|---|---|---|
-| 10 | Collapse 10+ patient header action buttons into "More ▾" menu                          | Low | — | §18.3 |
-| 11 | Drug–drug interaction checking at order entry                                          | Medium | — | §2 |
-| 12 | Duplicate order detection                                                              | Low | — | §2 |
-| 13 | Medication reconciliation workflow                                                     | Medium | — | §1 |
-| 14 | Vitals flowsheet and trend charts                                                      | Medium | — | §11 |
-| 15 | Lab / radiology order print form                                                       | Low | — | §14 |
-| 16 | MFA / 2FA — TOTP or WebAuthn second factor                                             | Medium | #5 | §15 |
-| 17 | Immunization schedule recommendations and contraindication checking                    | Medium | — | §12 |
-| 19 | Empty states — add icon, descriptive subtitle, and CTA button                          | Low | — | §18.6 |
-| 22 | UI language switching — English / Arabic via `next-intl`                               | High | — | §20.1 |
-| 23 | Full RTL layout — sidebar flip, logical CSS properties                                 | Medium | #22 | §20.2 |
-| 24 | `Patient/$everything` — one-call export and chart page performance                     | Medium | — | §23.3 |
-| 25 | Resource `_history` — demographics audit timeline                                      | Low | — | §23.1 |
-| 26 | Patient lists and care team cohorts (`List` / `Group` resource)                        | Low | — | §19.2 |
-| 27 | Appointment waitlist (`Appointment.status=waitlist`)                                   | Low | — | §19.3 |
-| 28 | Patient-level procedure history tab                                                    | Low | — | §24.16 |
-| 29 | Allergy reconciliation at encounter open                                               | Low | — | §24.1 |
-| 30 | Order → `DiagnosticReport` result linking                                              | Low | — | §24.13 |
-| 31 | Non-vital Observations — physical exam, social history, smoking status                 | Medium | — | §24.17 |
-| 32 | Additional `Composition` note types — progress note, H&P, nursing note, procedure note | Medium | — | §24.11 |
-| 34 | In-browser preview for PDF / image attachments                                         | Low | — | §24.5, §24.6 |
-| 35 | Serial diagnostic result comparison and trend table                                    | Medium | — | §24.5 |
-| 37 | Multi-provider encounter participation                                                 | Low | — | §24.7 |
+| #  | Task                                                                                   | Effort | Blocked by | Ref          |
+|----|----------------------------------------------------------------------------------------|--------|------------|--------------|
+| 10 | Collapse 10+ patient header action buttons into "More ▾" menu                          | Low    | —          | §18.3        |
+| 11 | Drug–drug interaction checking at order entry                                          | Medium | —          | §2           |
+| 12 | Duplicate order detection                                                              | Low    | —          | §2           |
+| 13 | Medication reconciliation workflow                                                     | Medium | —          | §1           |
+| 14 | Vitals flowsheet and trend charts                                                      | Medium | —          | §11          |
+| 15 | Lab / radiology order print form                                                       | Low    | —          | §14          |
+| 16 | MFA / 2FA — TOTP or WebAuthn second factor                                             | Medium | #5         | §15          |
+| 17 | Immunization schedule recommendations and contraindication checking                    | Medium | —          | §12          |
+| 19 | Empty states — add icon, descriptive subtitle, and CTA button                          | Low    | —          | §18.6        |
+| 22 | UI language switching — English / Arabic via `next-intl`                               | High   | —          | §20.1        |
+| 23 | Full RTL layout — sidebar flip, logical CSS properties                                 | Medium | #22        | §20.2        |
+| 24 | `Patient/$everything` — one-call export and chart page performance                     | Medium | —          | §23.3        |
+| 25 | Resource `_history` — demographics audit timeline                                      | Low    | —          | §23.1        |
+| 26 | Patient lists and care team cohorts (`List` / `Group` resource)                        | Low    | —          | §19.2        |
+| 27 | Appointment waitlist (`Appointment.status=waitlist`)                                   | Low    | —          | §19.3        |
+| 28 | Patient-level procedure history tab                                                    | Low    | —          | §24.16       |
+| 29 | Allergy reconciliation at encounter open                                               | Low    | —          | §24.1        |
+| 30 | Order → `DiagnosticReport` result linking                                              | Low    | —          | §24.13       |
+| 31 | Non-vital Observations — physical exam, social history, smoking status                 | Medium | —          | §24.17       |
+| 32 | Additional `Composition` note types — progress note, H&P, nursing note, procedure note | Medium | —          | §24.11       |
+| 34 | In-browser preview for PDF / image attachments                                         | Low    | —          | §24.5, §24.6 |
+| 35 | Serial diagnostic result comparison and trend table                                    | Medium | —          | §24.5        |
+| 37 | Multi-provider encounter participation                                                 | Low    | —          | §24.7        |
 
 ---
 

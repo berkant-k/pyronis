@@ -6,6 +6,7 @@ import {
     getOrganizationPractitioners,
     organizationDisplayName,
     organizationTypeLabel,
+    parseFhirId,
 } from "@/lib/fhir-client";
 import { OrgPractitionersCard } from "@/components/organizations/OrgPractitionersCard";
 import { Badge } from "@/components/ui/badge";
@@ -116,9 +117,9 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
                         <div className="flex items-center gap-2 text-sm">
                             <GitBranch className="h-4 w-4 text-muted-foreground shrink-0" />
                             <span className="text-muted-foreground">Part of:</span>
-                            <Link href={`/organizations/${parentRef.replace("Organization/", "")}`}
+                            <Link href={`/organizations/${parseFhirId(parentRef, "Organization") ?? parentRef}`}
                                 className="text-primary hover:underline truncate">
-                                {parentRef.replace("Organization/", "")}
+                                {parseFhirId(parentRef, "Organization") ?? parentRef}
                             </Link>
                         </div>
                     )}

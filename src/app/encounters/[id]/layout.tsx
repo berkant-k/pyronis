@@ -5,6 +5,7 @@ import {
   getPatientFlags,
   getPatientAllergies,
   getPatientAdvanceDirectives,
+  parseFhirId,
 } from "@/lib/fhir-client";
 import { EncounterPatientBar } from "@/components/patients/EncounterPatientBar";
 
@@ -22,9 +23,7 @@ export default async function EncounterDetailLayout({
 
   try {
     encounter = await getEncounter(id);
-    patientId = encounter.subject?.reference?.startsWith("Patient/")
-      ? encounter.subject.reference.slice(8)
-      : null;
+    patientId = parseFhirId(encounter.subject?.reference, "Patient") ?? null;
   } catch {
     return <>{children}</>;
   }
