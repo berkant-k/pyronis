@@ -37,6 +37,7 @@
 | 75 | DiagnosticReport attachment support — `presentedForm` multi-file upload (PDF/image) in `DiagnosticReportFormDialog` | Jun 2026 |
 | 36 | Encounter service type — added `serviceType` to `NewEncounterInput`, `createEncounter`, and `StartEncounterButton` dialog | Jun 2026 |
 | 20 | Header breadcrumbs + notification center — path-aware breadcrumbs with home icon; bell dropdown with unread badge, mark-all-read, dismiss | Jun 2026 |
+| 33 | Emergency contact quick access — RelatedPerson contacts (codes C/EP/N) shown as a strip in the patient header card with name, relationship, tel: link | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -67,10 +68,7 @@
 | 15 | Lab / radiology order print form                                                       | Low | — | §14 |
 | 16 | MFA / 2FA — TOTP or WebAuthn second factor                                             | Medium | #5 | §15 |
 | 17 | Immunization schedule recommendations and contraindication checking                    | Medium | — | §12 |
-| ~~18~~ | ~~Unified `StatusPill` component~~ | ~~Low~~ | — | ✅ Done |
 | 19 | Empty states — add icon, descriptive subtitle, and CTA button                          | Low | — | §18.6 |
-| ~~20~~ | ~~Header breadcrumbs and notification center~~ | ~~Low~~ | — | ✅ Done |
-| ~~21~~ | ~~Encounter page — SOAP-first layout with accordion or tabs below~~ | ~~Medium~~ | — | ✅ Done |
 | 22 | UI language switching — English / Arabic via `next-intl`                               | High | — | §20.1 |
 | 23 | Full RTL layout — sidebar flip, logical CSS properties                                 | Medium | #22 | §20.2 |
 | 24 | `Patient/$everything` — one-call export and chart page performance                     | Medium | — | §23.3 |
@@ -82,15 +80,10 @@
 | 30 | Order → `DiagnosticReport` result linking                                              | Low | — | §24.13 |
 | 31 | Non-vital Observations — physical exam, social history, smoking status                 | Medium | — | §24.17 |
 | 32 | Additional `Composition` note types — progress note, H&P, nursing note, procedure note | Medium | — | §24.11 |
-| 33 | Emergency contact quick access on patient header                                       | Low | — | §24.18 |
 | 34 | In-browser preview for PDF / image attachments                                         | Low | — | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | — | §24.5 |
-| ~~36~~ | ~~Encounter type and service type capture~~ | ~~Low~~ | — | ✅ Done |
 | 37 | Multi-provider encounter participation                                                 | Low | — | §24.7 |
 | 38 | Encounter search by practitioner                                                       | Low | — | §24.7 |
-| ~~73~~ | ~~Patient photo upload — `Patient.photo[0]` field with file picker and webcam capture~~ | ~~Low~~ | — | ✅ Done |
-| ~~74~~ | ~~Immunization form — add CVX code selector and `series` name field (`protocolApplied.series`)~~ | ~~Low~~ | — | ✅ Done |
-| ~~75~~ | ~~DiagnosticReport attachment support — `presentedForm` field with file upload in `DiagnosticReportFormDialog`~~ | ~~Low~~ | — | ✅ Done |
 
 ---
 
@@ -108,7 +101,6 @@
 | 46 | Referral receiving organization — replace free-text specialty | Low | #9 | §22 |
 | 47 | Icon-only buttons — `aria-label` and `Tooltip` | Low | — | §18.10 |
 | 48 | Form Arabic name section divider labels | Low | — | §18.9 |
-| ~~49~~ | ~~Sidebar active state — consistent active-page rule~~ | ~~Low~~ | — | ✅ Done |
 | 50 | Document versioning and referral document linking | Low | — | §9 |
 | 51 | Care plans and patient goals (`CarePlan` + `Goal` resources) | High | #9 | §5 |
 | 52 | Bed management and ADT workflow (`Location` + `Encounter.hospitalization`) | High | — | §8 |
@@ -152,9 +144,9 @@ All other tasks are unblocked and can be started independently.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 26 | 1, 10, 12, 15, 19, 20, 25, 26, 27, 28, 29, 30, 33, 34, 36, 37, 38, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
-| Medium | 20 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65 |
-| High | 10 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64 |
+| Low | 23 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 38, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
+| Medium | 21 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65 |
+| High | 12 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64 |
 
 ---
 
@@ -175,7 +167,6 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 28 | Patient-level procedure history tab | 🟡 Medium |
 | 29 | Allergy reconciliation at encounter open | 🟡 Medium |
 | 30 | Order → DiagnosticReport result linking | 🟡 Medium |
-| 33 | Emergency contact quick access on patient header | 🟡 Medium |
 | 34 | In-browser preview for PDF / image attachments | 🟡 Medium |
 | 37 | Multi-provider encounter participation | 🟡 Medium |
 | 38 | Encounter search by practitioner | 🟡 Medium |

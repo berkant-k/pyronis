@@ -32,6 +32,8 @@ import {
   getPatientQID,
   getPatientPassport,
   patientPhotoDataUrl,
+  relatedPersonDisplayName,
+  relatedPersonRelationship,
   EXT_VIP,
   EXT_INSURANCE,
   EXT_ADMIN_NOTES,
@@ -50,6 +52,7 @@ import {
   Building2, Clock, StickyNote, Fingerprint, BookOpen, Heart,
   ClipboardList, ShieldAlert, Flag as FlagIcon, Ban, Printer,
   Stethoscope, Pill, ListTodo, AlertTriangle, ChevronRight, Activity,
+  UserRound,
 } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
@@ -180,6 +183,13 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
   const phone  = patient.telecom?.find((t) => t.system === "phone")?.value;
   const email  = patient.telecom?.find((t) => t.system === "email")?.value;
   const address = patient.address?.[0];
+
+  const EMERGENCY_REL_CODES = new Set(["C", "EP", "N"]);
+  const emergencyContacts = relatedPersons.filter((r) =>
+    r.relationship?.some((rel) =>
+      rel.coding?.some((c) => EMERGENCY_REL_CODES.has(c.code ?? ""))
+    )
+  );
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -386,6 +396,38 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
               <SignalChip icon={Activity} label="Past Encounters" count={enc.length} variant="default" />
             )}
           </div>
+
+          {/* ── Emergency Contacts ── */}
+          {emergencyContacts.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border/60 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/50 shrink-0">
+                <UserRound className="h-3.5 w-3.5" />
+                Emergency Contact
+              </span>
+              {emergencyContacts.slice(0, 2).map((c) => {
+                const contactPhone = c.telecom?.find((t) => t.system === "phone")?.value;
+                return (
+                  <span key={c.id} className="flex items-center gap-2 text-sm">
+                    <span className="font-medium text-foreground">{relatedPersonDisplayName(c)}</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="text-xs text-muted-foreground">{relatedPersonRelationship(c)}</span>
+                    {contactPhone && (
+                      <>
+                        <span className="text-muted-foreground/40">·</span>
+                        <a
+                          href={`tel:${contactPhone}`}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          <Phone className="h-3 w-3" />
+                          {contactPhone}
+                        </a>
+                      </>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
         </CardContent>
       </Card>
