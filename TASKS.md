@@ -43,6 +43,7 @@
 | 85 | Triage acuity capture — 5-level ESI selector and chief complaint on encounter start; `Encounter.priority` coded with `https://pyronis.health/fhir/triage-acuity`; acuity pill in `EncounterPatientBar` (Row 2), encounter list table, patient header active-encounter chip, and encounter Details tab | Jun 2026 |
 | 77 | Location definitions — CRUD for `Location` resources (hospital, department, ward, room, bed hierarchy); `locationPhysicalType` and `locationType` in `config.json`; list + search page, detail page with hierarchy links, create / edit / delete; `Locations` added to sidebar nav | Jun 2026 |
 | 78 | HealthcareService definitions — CRUD for `HealthcareService` resources; category/specialty selectors, day-of-week availability toggles, opening/closing times, linked location and organization; `Services` added to sidebar nav | Jun 2026 |
+| 79 | Device definitions — CRUD for `Device` resources; 11 device type options; asset code, UDI, manufacturer, model, serial number fields; linked owner org and location; `Devices` added to sidebar nav | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -95,7 +96,6 @@
 | 34 | In-browser preview for PDF / image attachments                                         | Low    | —          | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | —          | §24.5        |
 | 37 | Multi-provider encounter participation                                                 | Low    | —          | §24.7        |
-| 79 | Device definitions — CRUD for `Device` resources (device name, type, manufacturer, model, UDI, status, linked location and owner organization) | Medium | — | — |
 | 80 | Subscription definitions — CRUD for `Subscription` resources (topic/criteria, channel type, endpoint URL, filters, expiry) | Medium | — | — |
 | 80a | ↳ Notification receiver — Next.js API route (`/api/fhir/notify`) to accept, validate, and persist incoming FHIR notification `Bundle` payloads | Medium | #80 | — |
 | 80b | ↳ Notification inbox UI — browse, filter by resource type / date, and acknowledge received notifications | Low | #80a | — |

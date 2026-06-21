@@ -38,7 +38,8 @@
       "organization": "https://pyronis.health/fhir/organization-id",
       "practitionerRole": "https://pyronis.health/fhir/practitioner-role-id",
       "location": "https://pyronis.health/fhir/location-id",
-      "healthcareService": "https://pyronis.health/fhir/healthcare-service-id"
+      "healthcareService": "https://pyronis.health/fhir/healthcare-service-id",
+      "device": "https://pyronis.health/fhir/device-id"
     },
     "identifierTypes": {
       "NN": "QID",
@@ -103,7 +104,8 @@
       "triageAcuity": "https://pyronis.health/fhir/triage-acuity",
       "locationPhysicalType": "http://terminology.hl7.org/CodeSystem/location-physical-type",
       "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
-      "healthcareServiceCategory": "https://pyronis.health/fhir/service-category"
+      "healthcareServiceCategory": "https://pyronis.health/fhir/service-category",
+      "deviceType": "https://pyronis.health/fhir/device-type"
     },
     "questionnaires": {
       "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
@@ -152,6 +154,19 @@
         { "code": "PR",  "display": "Preventive Care" },
         { "code": "NR",  "display": "Nursing / Care" },
         { "code": "OT",  "display": "Other" }
+      ],
+      "deviceType": [
+        { "code": "IMG", "display": "Imaging Equipment" },
+        { "code": "LAB", "display": "Laboratory Analyser" },
+        { "code": "MON", "display": "Patient Monitor" },
+        { "code": "INF", "display": "Infusion Pump" },
+        { "code": "VEN", "display": "Ventilator" },
+        { "code": "DEF", "display": "Defibrillator / AED" },
+        { "code": "SUR", "display": "Surgical Equipment" },
+        { "code": "POC", "display": "Point-of-Care Testing" },
+        { "code": "MED", "display": "Medication Dispenser" },
+        { "code": "BED", "display": "Bed / Stretcher" },
+        { "code": "OTH", "display": "Other" }
       ],
       "locationType": [
         { "code": "HOSP",    "display": "Hospital" },
