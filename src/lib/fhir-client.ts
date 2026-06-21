@@ -27,7 +27,6 @@ import type {
     Resource,
     ServiceRequest,
     Subscription,
-    SubscriptionChannel,
     SubscriptionStatus,
     Task,
 } from "@medplum/fhirtypes";
