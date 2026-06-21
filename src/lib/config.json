@@ -36,7 +36,8 @@
       "documentRef": "https://pyronis.health/fhir/document-ref-id",
       "practitioner": "https://pyronis.health/fhir/practitioner-id",
       "organization": "https://pyronis.health/fhir/organization-id",
-      "practitionerRole": "https://pyronis.health/fhir/practitioner-role-id"
+      "practitionerRole": "https://pyronis.health/fhir/practitioner-role-id",
+      "location": "https://pyronis.health/fhir/location-id"
     },
     "identifierTypes": {
       "NN": "QID",
@@ -98,7 +99,9 @@
       "allergyClinical": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
       "allergyVerification": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
       "cvx": "http://hl7.org/fhir/sid/cvx",
-      "triageAcuity": "https://pyronis.health/fhir/triage-acuity"
+      "triageAcuity": "https://pyronis.health/fhir/triage-acuity",
+      "locationPhysicalType": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+      "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode"
     },
     "questionnaires": {
       "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
@@ -125,6 +128,29 @@
         { "code": "3", "display": "ESI 3 — Urgent" },
         { "code": "4", "display": "ESI 4 — Less Urgent" },
         { "code": "5", "display": "ESI 5 — Non-Urgent" }
+      ],
+      "locationPhysicalType": [
+        { "code": "si",   "display": "Site / Campus" },
+        { "code": "bu",   "display": "Building" },
+        { "code": "wi",   "display": "Wing / Block" },
+        { "code": "wa",   "display": "Ward / Floor" },
+        { "code": "ro",   "display": "Room" },
+        { "code": "bd",   "display": "Bed" },
+        { "code": "area", "display": "Area / Zone" }
+      ],
+      "locationType": [
+        { "code": "HOSP",    "display": "Hospital" },
+        { "code": "ER",      "display": "Emergency Room" },
+        { "code": "ICU",     "display": "Intensive Care Unit" },
+        { "code": "NICU",    "display": "Neonatal ICU" },
+        { "code": "PICU",    "display": "Paediatric ICU" },
+        { "code": "SURG",    "display": "Operating Theatre / Surgery" },
+        { "code": "PHARM",   "display": "Pharmacy" },
+        { "code": "DX",      "display": "Radiology / Diagnostics" },
+        { "code": "OF",      "display": "Outpatient Clinic" },
+        { "code": "RH",      "display": "Rehabilitation" },
+        { "code": "PEDU",    "display": "Paediatric Unit" },
+        { "code": "OTH",     "display": "Other" }
       ],
       "ethnicity": [
         {"code": "90027003", "display": "Arab", "system": "http://snomed.info/sct"},
