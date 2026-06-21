@@ -332,6 +332,21 @@ export function encounterStatusColor(status: string): StatusColor {
     return map[status] ?? "muted";
 }
 
+export function getEncounterTriageAcuity(enc: Encounter): string | null {
+    return enc.priority?.coding?.find(
+        (c) => c.system === config.fhir.codeSystems.triageAcuity
+    )?.code ?? null;
+}
+
+export function triageAcuityColor(code: string): StatusColor {
+    const map: Record<string, StatusColor> = { "1": "red", "2": "orange", "3": "yellow", "4": "green", "5": "blue" };
+    return map[code] ?? "muted";
+}
+
+export function triageAcuityLabel(code: string): string {
+    return config.fhir.options.triageAcuity.find((t) => t.code === code)?.display ?? `ESI ${code}`;
+}
+
 export function conditionClinicalStatusColor(status: string): StatusColor {
     const map: Record<string, StatusColor> = {
         active:      "red",
@@ -1096,6 +1111,7 @@ export interface NewEncounterInput {
     typeText?: string;
     serviceType?: string;
     reasonText?: string;
+    triageAcuity?: string;
     periodStart: string;
     participantIds?: string[];
     appointmentId?: string;
@@ -1129,6 +1145,15 @@ export async function createEncounter(input: NewEncounterInput): Promise<Encount
         ...(input.typeText ? {type: [{text: input.typeText}]} : {}),
         ...(input.serviceType ? {serviceType: {text: input.serviceType}} : {}),
         ...(input.reasonText ? {reasonCode: [{text: input.reasonText}]} : {}),
+        ...(input.triageAcuity ? {
+            priority: {
+                coding: [{
+                    system: config.fhir.codeSystems.triageAcuity,
+                    code: input.triageAcuity,
+                    display: config.fhir.options.triageAcuity.find((t) => t.code === input.triageAcuity)?.display,
+                }],
+            },
+        } : {}),
         ...(input.participantIds?.length ? {
             participant: input.participantIds.map((pid) => ({
                 individual: { reference: `Practitioner/${pid}` },

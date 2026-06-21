@@ -34,6 +34,7 @@ import {
   patientAge,
   formatDate,
 } from "@/lib/fhir-client"
+import config from "@/lib/config.json"
 import type { Patient, Practitioner } from "@medplum/fhirtypes"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -248,6 +249,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
   const [typeText, setTypeText] = useState("")
   const [serviceTypeText, setServiceTypeText] = useState("")
   const [reasonText, setReasonText] = useState("")
+  const [triageAcuity, setTriageAcuity] = useState("")
   const [practitioners, setPractitioners] = useState<Practitioner[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -257,6 +259,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
     setTypeText("")
     setServiceTypeText("")
     setReasonText("")
+    setTriageAcuity("")
     setPractitioners([])
     setError(null)
   }
@@ -283,6 +286,7 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
         typeText: typeText || undefined,
         serviceType: serviceTypeText || undefined,
         reasonText: reasonText.trim() || undefined,
+        triageAcuity: triageAcuity || undefined,
         periodStart: new Date().toISOString(),
         participantIds: practitioners.map((p) => p.id!).filter(Boolean),
       })
@@ -380,6 +384,23 @@ export function StartEncounterButton({ patientId, patient }: StartEncounterButto
                 rows={2}
                 className="resize-none"
               />
+            </div>
+
+            {/* Triage acuity */}
+            <div className="space-y-1.5">
+              <Label htmlFor="enc-triage">Triage acuity (ESI)</Label>
+              <Select value={triageAcuity} onValueChange={(v) => setTriageAcuity(v ?? "")}>
+                <SelectTrigger id="enc-triage" className="w-full">
+                  <SelectValue placeholder="Select triage level (optional)…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {config.fhir.options.triageAcuity.map((t) => (
+                    <SelectItem key={t.code} value={t.code}>
+                      {t.display}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Practitioners */}
