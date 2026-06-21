@@ -2,6 +2,7 @@ import type {
     AllergyIntolerance,
     Appointment,
     Bundle,
+    Device,
     Composition,
     Consent,
     Condition,
@@ -4953,5 +4954,147 @@ export function healthcareServiceToFormState(svc: HealthcareService): Healthcare
         availStartTime:         avail?.availableStartTime ?? "",
         availEndTime:           avail?.availableEndTime ?? "",
         availabilityExceptions: svc.availabilityExceptions ?? "",
+    };
+}
+
+// ─── Device ───────────────────────────────────────────────────────────────────
+
+const DEVICE_ID_SYSTEM = config.fhir.identifierSystems.device;
+
+export interface NewDeviceInput {
+    name: string;
+    identifier?: string;
+    status?: "active" | "inactive" | "entered-in-error" | "unknown";
+    type?: string;
+    manufacturer?: string;
+    modelNumber?: string;
+    serialNumber?: string;
+    udi?: string;
+    ownerOrgId?: string;
+    locationId?: string;
+    note?: string;
+}
+
+export interface DeviceFormState {
+    name: string;
+    identifier: string;
+    status: string;
+    type: string;
+    manufacturer: string;
+    modelNumber: string;
+    serialNumber: string;
+    udi: string;
+    ownerOrgId: string;
+    ownerOrgName: string;
+    locationId: string;
+    locationName: string;
+    note: string;
+}
+
+function buildDeviceBody(input: NewDeviceInput, id?: string): Device {
+    const typeOpt = config.fhir.options.deviceType.find((t) => t.code === input.type);
+    return {
+        resourceType: "Device",
+        ...(id ? { id } : {}),
+        status: (input.status ?? "active") as Device["status"],
+        deviceName: [{ name: input.name.trim(), type: "user-friendly-name" as const }],
+        ...(input.identifier?.trim() ? { identifier: [{ system: DEVICE_ID_SYSTEM, value: input.identifier.trim() }] } : {}),
+        ...(input.type ? {
+            type: {
+                coding: [{ system: config.fhir.codeSystems.deviceType, code: input.type, display: typeOpt?.display }],
+                text: typeOpt?.display ?? input.type,
+            },
+        } : {}),
+        ...(input.manufacturer?.trim() ? { manufacturer: input.manufacturer.trim() } : {}),
+        ...(input.modelNumber?.trim() ? { modelNumber: input.modelNumber.trim() } : {}),
+        ...(input.serialNumber?.trim() ? { serialNumber: input.serialNumber.trim() } : {}),
+        ...(input.udi?.trim() ? { udiCarrier: [{ carrierHRF: input.udi.trim() }] } : {}),
+        ...(input.ownerOrgId ? { owner: { reference: `Organization/${input.ownerOrgId}` } } : {}),
+        ...(input.locationId ? { location: { reference: `Location/${input.locationId}` } } : {}),
+        ...(input.note?.trim() ? { note: [{ text: input.note.trim() }] } : {}),
+    };
+}
+
+export async function getDevice(id: string): Promise<Device> {
+    return fhirFetch<Device>(`Device/${id}`);
+}
+
+export async function searchDevices(query?: string): Promise<Device[]> {
+    const params: Record<string, string> = { _count: "100", _sort: "_lastUpdated" };
+    if (query?.trim()) params["device-name"] = query.trim();
+    const bundle = await fhirFetch<Bundle>("Device", params);
+    return (bundle.entry ?? [])
+        .map((e) => e.resource as Device)
+        .filter((r): r is Device => r?.resourceType === "Device");
+}
+
+export async function createDevice(input: NewDeviceInput): Promise<Device> {
+    const body = buildDeviceBody(input);
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Device`, {
+        method: "POST",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Failed to create device: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<Device>;
+}
+
+export async function updateDevice(id: string, input: NewDeviceInput): Promise<Device> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Device/${id}`, {
+        method: "PUT",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(buildDeviceBody(input, id)),
+    });
+    if (!res.ok) throw new Error(`Failed to update device: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<Device>;
+}
+
+export async function deleteDevice(id: string): Promise<void> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Device/${id}`, {
+        method: "DELETE",
+        headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 404) throw new Error(`Failed to delete device: ${res.status}`);
+}
+
+export function deviceDisplayName(dev: Device): string {
+    return dev.deviceName?.find((n) => n.type === "user-friendly-name")?.name
+        ?? dev.deviceName?.[0]?.name
+        ?? "Unknown Device";
+}
+
+export function deviceTypeLabel(dev: Device): string | null {
+    const code = dev.type?.coding?.[0]?.code;
+    if (!code) return null;
+    return config.fhir.options.deviceType.find((t) => t.code === code)?.display
+        ?? dev.type?.text
+        ?? code;
+}
+
+export function deviceStatusColor(status: string | undefined): StatusColor {
+    const map: Record<string, StatusColor> = {
+        active:            "green",
+        inactive:          "slate",
+        "entered-in-error":"red",
+        unknown:           "muted",
+    };
+    return map[status ?? ""] ?? "muted";
+}
+
+export function deviceToFormState(dev: Device): DeviceFormState {
+    return {
+        name:         deviceDisplayName(dev),
+        identifier:   dev.identifier?.find((i) => i.system === DEVICE_ID_SYSTEM)?.value ?? dev.identifier?.[0]?.value ?? "",
+        status:       dev.status ?? "active",
+        type:         dev.type?.coding?.[0]?.code ?? "",
+        manufacturer: dev.manufacturer ?? "",
+        modelNumber:  dev.modelNumber ?? "",
+        serialNumber: dev.serialNumber ?? "",
+        udi:          dev.udiCarrier?.[0]?.carrierHRF ?? "",
+        ownerOrgId:   parseFhirId(dev.owner?.reference, "Organization") ?? "",
+        ownerOrgName: dev.owner?.display ?? "",
+        locationId:   parseFhirId(dev.location?.reference, "Location") ?? "",
+        locationName: dev.location?.display ?? "",
+        note:         dev.note?.[0]?.text ?? "",
     };
 }

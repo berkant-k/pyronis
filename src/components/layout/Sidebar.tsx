@@ -27,6 +27,7 @@ import {
   PanelLeftOpen,
   MapPin,
   Hospital,
+  Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -50,6 +51,7 @@ const navItems = [
   { href: "/organizations",  label: "Organizations",  icon: Building2 },
   { href: "/locations",           label: "Locations",      icon: MapPin },
   { href: "/healthcare-services", label: "Services",       icon: Hospital },
+  { href: "/devices",             label: "Devices",        icon: Cpu },
   { href: "/questionnaires", label: "Questionnaires", icon: ClipboardList },
 ];
 
