@@ -55,6 +55,15 @@
 | 4 | ICD-10 code search / autocomplete (+ RxNorm) | Medium | — | §13 |
 | 5 | OAuth 2.0 / OIDC SSO — replace JWT paste login | High | — | §15 |
 | 9 | CareTeam management — team roster, patient assignment, team-scoped worklist | Medium | — | §24.3 |
+| 22 | UI language switching — English / Arabic via `next-intl` (MoPH regulatory requirement) | High | — | §20.1 |
+| 53 | Billing — `Coverage`, `ChargeItem`, and `Claim` resources | High | #83 | §7 |
+| 83 | Insurance pre-authorization — PA request/response tied to `ServiceRequest` / `MedicationRequest`; approval reference number, payer, status (pending / approved / denied / expired), expiry tracking; PA status badge visible at order entry | Medium | #3 | — |
+| 84 | Medical fitness certificate — pre-employment exam template (TB/chest X-ray, HIV, hepatitis B/C, syphilis, general fitness); MoPH-format certificate print/PDF; batch processing support for occupational health clinics | Medium | — | — |
+| 85 | Triage acuity capture — 5-level ESI/MTS selector and structured chief complaint field on encounter start; triage timestamp on `Encounter.priority` + `Encounter.reasonCode`; acuity badge on encounter list and patient header active-encounter chip | Low | — | — |
+| 88 | HL7 v2 LIS/RIS bridge — ORM message export for lab/rad `ServiceRequest`; ORU inbound parser to auto-create `DiagnosticReport` + `Observation` from lab result messages; implemented as a Next.js API route or sidecar service | High | — | — |
+| 89 | Pharmacist verification — verification status on `MedicationRequest` (pending-pharmacist / pharmacist-verified / dispensed); pharmacist role action to verify; block MAR administration recording on unverified orders | Low | — | — |
+| 91 | Discharge Against Medical Advice (DAMA) — DAMA flag on encounter discharge (`Encounter.hospitalization.dischargeDisposition` code `aadvice`); required clinician and witness attestation fields; printable MoPH-format DAMA form | Low | — | — |
+| 93 | Asia/Qatar timezone handling — all date/time display conversions use `Asia/Qatar` (UTC+3, no DST); fix `toLocaleDateString` and administration-time display across appointments, encounters, and MAR | Low | — | — |
 
 ---
 
@@ -71,7 +80,6 @@
 | 16 | MFA / 2FA — TOTP or WebAuthn second factor                                             | Medium | #5         | §15          |
 | 17 | Immunization schedule recommendations and contraindication checking                    | Medium | —          | §12          |
 | 19 | Empty states — add icon, descriptive subtitle, and CTA button                          | Low    | —          | §18.6        |
-| 22 | UI language switching — English / Arabic via `next-intl`                               | High   | —          | §20.1        |
 | 23 | Full RTL layout — sidebar flip, logical CSS properties                                 | Medium | #22        | §20.2        |
 | 24 | `Patient/$everything` — one-call export and chart page performance                     | Medium | —          | §23.3        |
 | 25 | Resource `_history` — demographics audit timeline                                      | Low    | —          | §23.1        |
@@ -85,6 +93,21 @@
 | 34 | In-browser preview for PDF / image attachments                                         | Low    | —          | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | —          | §24.5        |
 | 37 | Multi-provider encounter participation                                                 | Low    | —          | §24.7        |
+| 77 | Location definitions — CRUD for `Location` resources (hospital, department, ward, room, bed hierarchy) | Medium | — | §8 |
+| 78 | HealthcareService definitions — CRUD for `HealthcareService` resources (service name, category, specialty, available times, linked location and organization) | Medium | — | §21 |
+| 79 | Device definitions — CRUD for `Device` resources (device name, type, manufacturer, model, UDI, status, linked location and owner organization) | Medium | — | — |
+| 80 | Subscription definitions — CRUD for `Subscription` resources (topic/criteria, channel type, endpoint URL, filters, expiry) | Medium | — | — |
+| 80a | ↳ Notification receiver — Next.js API route (`/api/fhir/notify`) to accept, validate, and persist incoming FHIR notification `Bundle` payloads | Medium | #80 | — |
+| 80b | ↳ Notification inbox UI — browse, filter by resource type / date, and acknowledge received notifications | Low | #80a | — |
+| 80c | ↳ Notification routing — navigate to the triggering patient or encounter directly from a notification entry | Low | #80a | — |
+| 80d | ↳ Subscription status panel — per-subscription health badge, error count, and last-delivery timestamp | Low | #80 | — |
+| 81 | Customizable lab order form — `ServiceRequest` for laboratory tests with configurable test panels (driven by `config.json`), specimen type, priority, clinical indication (ICD-10), ordering provider, and free-text notes | Medium | — | §2 |
+| 82 | Customizable radiology order form — `ServiceRequest` for imaging with configurable modality/body-site lists (driven by `config.json`), contrast flag, priority, clinical indication (ICD-10), ordering provider, and clinical notes | Medium | — | §2 |
+| 86 | Chronic disease management — `EpisodeOfCare` enrollment for DM / HTN / CKD programs; disease-specific monitoring dashboard (HbA1c trend, BP, eGFR, urine ACR); overdue-screening alert at encounter open | Medium | — | — |
+| 87 | Maternal & child health — `EpisodeOfCare` (pregnancy), EDD calculator, antenatal visit schedule with overdue alerts, delivery record (`Procedure` + `Encounter`), postnatal follow-up | High | — | — |
+| 90 | Occupational health module — pre-placement exam, periodic health surveillance, return-to-work clearance, exposure incident report; `EpisodeOfCare` + occupation coding | High | — | — |
+| 92 | Bilingual informed consent — EN/AR `Consent` form generation (`scope=treatment`), translator attestation field, digital or wet-signature capture; required before procedures are performed | Low | — | §4 |
+| 94 | Qatar National Health Number (NHN) — NHN as a second patient identifier alongside QID/MRN; QID format validation (11-digit rule); NHDRP / HIE patient lookup via NHN | Low | — | — |
 
 ---
 
@@ -104,8 +127,7 @@
 | 48 | Form Arabic name section divider labels | Low | — | §18.9 |
 | 50 | Document versioning and referral document linking | Low | — | §9 |
 | 51 | Care plans and patient goals (`CarePlan` + `Goal` resources) | High | #9 | §5 |
-| 52 | Bed management and ADT workflow (`Location` + `Encounter.hospitalization`) | High | — | §8 |
-| 53 | Billing — `Coverage`, `ChargeItem`, and `Claim` resources | High | — | §7 |
+| 52 | Bed management and ADT workflow (`Location` + `Encounter.hospitalization`) | High | #77 | §8 |
 | 54 | Role-based access control (RBAC) and `AuditEvent` log | High | — | §16 |
 | 55 | Terminology server integration — `ValueSet/$expand` for live code suggestions | Medium | — | §13 |
 | 56 | SMART on FHIR — standard launch context and OAuth scopes | High | #5 | §15 |
@@ -132,9 +154,18 @@
  ├── blocks #46  Referral receiving organization
  └── blocks #51  Care plans & goals (CarePlan + Goal)
 
+#77  Location definitions
+ └── blocks #52  Bed management and ADT workflow
+
 #22  UI language switching (next-intl)
  ├── blocks #23  Full RTL layout
  └── blocks #45  Arabic clinical terminology display
+
+#3  Coverage / insurance plans
+ └── blocks #83  Insurance pre-authorization
+
+#83  Insurance pre-authorization
+ └── blocks #53  Billing (Coverage → PA → ChargeItem/Claim)
 ```
 
 All other tasks are unblocked and can be started independently.
@@ -145,9 +176,9 @@ All other tasks are unblocked and can be started independently.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 22 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66 |
-| Medium | 21 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65 |
-| High | 12 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64 |
+| Low | 31 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 85, 89, 91, 92, 93, 94 |
+| Medium | 31 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 77, 78, 79, 80, 80a, 81, 82, 83, 84, 86 |
+| High | 15 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90 |
 
 ---
 
@@ -158,6 +189,10 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | # | Task | Priority |
 |---|---|---|
 | 1 | Allergy–drug conflict alert at prescribing time | 🔴 High |
+| 85 | Triage acuity capture (ESI/MTS) on encounter start | 🔴 High |
+| 89 | Pharmacist verification on MedicationRequest | 🔴 High |
+| 91 | Discharge Against Medical Advice (DAMA) flag + form | 🔴 High |
+| 93 | Asia/Qatar timezone fix across all date/time display | 🔴 High |
 | 10 | Collapse 10+ patient header action buttons into "More ▾" menu | 🟡 Medium |
 | 12 | Duplicate order detection | 🟡 Medium |
 | 15 | Lab / radiology order print form | 🟡 Medium |
@@ -170,3 +205,5 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 30 | Order → DiagnosticReport result linking | 🟡 Medium |
 | 34 | In-browser preview for PDF / image attachments | 🟡 Medium |
 | 37 | Multi-provider encounter participation | 🟡 Medium |
+| 92 | Bilingual informed consent (EN/AR) with translator attestation | 🟡 Medium |
+| 94 | Qatar National Health Number (NHN) identifier + QID validation | 🟡 Medium |
