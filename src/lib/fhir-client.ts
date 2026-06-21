@@ -11,6 +11,7 @@ import type {
     FamilyMemberHistory,
     Flag,
     Immunization,
+    HealthcareService,
     Location,
     MedicationAdministration,
     MedicationRequest,
@@ -4809,5 +4810,148 @@ export function locationToFormState(loc: Location): LocationFormState {
         addressCity:             loc.address?.city ?? "",
         addressCountry:          loc.address?.country ?? "",
         phone:                   loc.telecom?.find((t) => t.system === "phone")?.value ?? "",
+    };
+}
+
+// ─── HealthcareService ────────────────────────────────────────────────────────
+
+const HS_ID_SYSTEM = config.fhir.identifierSystems.healthcareService;
+
+export interface NewHealthcareServiceInput {
+    name: string;
+    identifier?: string;
+    active: boolean;
+    comment?: string;
+    category?: string;
+    specialty?: string;
+    providedByOrgId?: string;
+    locationId?: string;
+    phone?: string;
+    availDays?: string[];
+    availStartTime?: string;
+    availEndTime?: string;
+    availabilityExceptions?: string;
+}
+
+export interface HealthcareServiceFormState {
+    name: string;
+    identifier: string;
+    active: boolean;
+    comment: string;
+    category: string;
+    specialty: string;
+    providedByOrgId: string;
+    providedByOrgName: string;
+    locationId: string;
+    locationName: string;
+    phone: string;
+    availDays: string[];
+    availStartTime: string;
+    availEndTime: string;
+    availabilityExceptions: string;
+}
+
+function buildHealthcareServiceBody(input: NewHealthcareServiceInput, id?: string): HealthcareService {
+    const catOpt = config.fhir.options.healthcareServiceCategory.find((c) => c.code === input.category);
+    return {
+        resourceType: "HealthcareService",
+        ...(id ? { id } : {}),
+        active: input.active,
+        name: input.name.trim(),
+        ...(input.identifier?.trim() ? { identifier: [{ system: HS_ID_SYSTEM, value: input.identifier.trim() }] } : {}),
+        ...(input.comment?.trim() ? { comment: input.comment.trim() } : {}),
+        ...(input.category ? {
+            category: [{
+                coding: [{ system: config.fhir.codeSystems.healthcareServiceCategory, code: input.category, display: catOpt?.display }],
+                text: catOpt?.display ?? input.category,
+            }],
+        } : {}),
+        ...(input.specialty ? { specialty: [{ text: input.specialty }] } : {}),
+        ...(input.providedByOrgId ? { providedBy: { reference: `Organization/${input.providedByOrgId}` } } : {}),
+        ...(input.locationId ? { location: [{ reference: `Location/${input.locationId}` }] } : {}),
+        ...(input.phone?.trim() ? { telecom: [{ system: "phone" as const, value: input.phone.trim() }] } : {}),
+        ...((input.availDays?.length || input.availStartTime || input.availEndTime) ? {
+            availableTime: [{
+                ...(input.availDays?.length ? { daysOfWeek: input.availDays as ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[] } : {}),
+                ...(input.availStartTime ? { availableStartTime: input.availStartTime } : {}),
+                ...(input.availEndTime ? { availableEndTime: input.availEndTime } : {}),
+            }],
+        } : {}),
+        ...(input.availabilityExceptions?.trim() ? { availabilityExceptions: input.availabilityExceptions.trim() } : {}),
+    };
+}
+
+export async function getHealthcareService(id: string): Promise<HealthcareService> {
+    return fhirFetch<HealthcareService>(`HealthcareService/${id}`);
+}
+
+export async function searchHealthcareServices(query?: string): Promise<HealthcareService[]> {
+    const params: Record<string, string> = { _count: "100", _sort: "name" };
+    if (query?.trim()) params.name = query.trim();
+    const bundle = await fhirFetch<Bundle>("HealthcareService", params);
+    return (bundle.entry ?? [])
+        .map((e) => e.resource as HealthcareService)
+        .filter((r): r is HealthcareService => r?.resourceType === "HealthcareService");
+}
+
+export async function createHealthcareService(input: NewHealthcareServiceInput): Promise<HealthcareService> {
+    const body = buildHealthcareServiceBody(input);
+    const res = await fhirRequest(`${getFhirBaseUrl()}/HealthcareService`, {
+        method: "POST",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Failed to create healthcare service: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<HealthcareService>;
+}
+
+export async function updateHealthcareService(id: string, input: NewHealthcareServiceInput): Promise<HealthcareService> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/HealthcareService/${id}`, {
+        method: "PUT",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(buildHealthcareServiceBody(input, id)),
+    });
+    if (!res.ok) throw new Error(`Failed to update healthcare service: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<HealthcareService>;
+}
+
+export async function deleteHealthcareService(id: string): Promise<void> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/HealthcareService/${id}`, {
+        method: "DELETE",
+        headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 404) throw new Error(`Failed to delete healthcare service: ${res.status}`);
+}
+
+export function healthcareServiceDisplayName(svc: HealthcareService): string {
+    return svc.name ?? "Unknown Service";
+}
+
+export function healthcareServiceCategoryLabel(svc: HealthcareService): string | null {
+    const code = svc.category?.[0]?.coding?.[0]?.code;
+    if (!code) return null;
+    return config.fhir.options.healthcareServiceCategory.find((c) => c.code === code)?.display
+        ?? svc.category?.[0]?.text
+        ?? code;
+}
+
+export function healthcareServiceToFormState(svc: HealthcareService): HealthcareServiceFormState {
+    const avail = svc.availableTime?.[0];
+    return {
+        name:                   svc.name ?? "",
+        identifier:             svc.identifier?.find((i) => i.system === HS_ID_SYSTEM)?.value ?? svc.identifier?.[0]?.value ?? "",
+        active:                 svc.active !== false,
+        comment:                svc.comment ?? "",
+        category:               svc.category?.[0]?.coding?.[0]?.code ?? "",
+        specialty:              svc.specialty?.[0]?.text ?? "",
+        providedByOrgId:        parseFhirId(svc.providedBy?.reference, "Organization") ?? "",
+        providedByOrgName:      svc.providedBy?.display ?? "",
+        locationId:             parseFhirId(svc.location?.[0]?.reference, "Location") ?? "",
+        locationName:           svc.location?.[0]?.display ?? "",
+        phone:                  svc.telecom?.find((t) => t.system === "phone")?.value ?? "",
+        availDays:              avail?.daysOfWeek ?? [],
+        availStartTime:         avail?.availableStartTime ?? "",
+        availEndTime:           avail?.availableEndTime ?? "",
+        availabilityExceptions: svc.availabilityExceptions ?? "",
     };
 }

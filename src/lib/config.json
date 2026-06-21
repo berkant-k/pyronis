@@ -37,7 +37,8 @@
       "practitioner": "https://pyronis.health/fhir/practitioner-id",
       "organization": "https://pyronis.health/fhir/organization-id",
       "practitionerRole": "https://pyronis.health/fhir/practitioner-role-id",
-      "location": "https://pyronis.health/fhir/location-id"
+      "location": "https://pyronis.health/fhir/location-id",
+      "healthcareService": "https://pyronis.health/fhir/healthcare-service-id"
     },
     "identifierTypes": {
       "NN": "QID",
@@ -101,7 +102,8 @@
       "cvx": "http://hl7.org/fhir/sid/cvx",
       "triageAcuity": "https://pyronis.health/fhir/triage-acuity",
       "locationPhysicalType": "http://terminology.hl7.org/CodeSystem/location-physical-type",
-      "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode"
+      "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+      "healthcareServiceCategory": "https://pyronis.health/fhir/service-category"
     },
     "questionnaires": {
       "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
@@ -137,6 +139,19 @@
         { "code": "ro",   "display": "Room" },
         { "code": "bd",   "display": "Bed" },
         { "code": "area", "display": "Area / Zone" }
+      ],
+      "healthcareServiceCategory": [
+        { "code": "DX",  "display": "Diagnostic Services" },
+        { "code": "OP",  "display": "Outpatient Care" },
+        { "code": "IP",  "display": "Inpatient Services" },
+        { "code": "EM",  "display": "Emergency Services" },
+        { "code": "SU",  "display": "Surgical Services" },
+        { "code": "PH",  "display": "Pharmacy Services" },
+        { "code": "MH",  "display": "Mental Health" },
+        { "code": "RH",  "display": "Rehabilitation" },
+        { "code": "PR",  "display": "Preventive Care" },
+        { "code": "NR",  "display": "Nursing / Care" },
+        { "code": "OT",  "display": "Other" }
       ],
       "locationType": [
         { "code": "HOSP",    "display": "Hospital" },

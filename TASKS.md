@@ -42,6 +42,7 @@
 | 76 | Auto-assign MRN on edit — `updatePatient` generates a new MRN when the existing resource has none and the form field is empty | Jun 2026 |
 | 85 | Triage acuity capture — 5-level ESI selector and chief complaint on encounter start; `Encounter.priority` coded with `https://pyronis.health/fhir/triage-acuity`; acuity pill in `EncounterPatientBar` (Row 2), encounter list table, patient header active-encounter chip, and encounter Details tab | Jun 2026 |
 | 77 | Location definitions — CRUD for `Location` resources (hospital, department, ward, room, bed hierarchy); `locationPhysicalType` and `locationType` in `config.json`; list + search page, detail page with hierarchy links, create / edit / delete; `Locations` added to sidebar nav | Jun 2026 |
+| 78 | HealthcareService definitions — CRUD for `HealthcareService` resources; category/specialty selectors, day-of-week availability toggles, opening/closing times, linked location and organization; `Services` added to sidebar nav | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -94,7 +95,6 @@
 | 34 | In-browser preview for PDF / image attachments                                         | Low    | —          | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | —          | §24.5        |
 | 37 | Multi-provider encounter participation                                                 | Low    | —          | §24.7        |
-| 78 | HealthcareService definitions — CRUD for `HealthcareService` resources (service name, category, specialty, available times, linked location and organization) | Medium | — | §21 |
 | 79 | Device definitions — CRUD for `Device` resources (device name, type, manufacturer, model, UDI, status, linked location and owner organization) | Medium | — | — |
 | 80 | Subscription definitions — CRUD for `Subscription` resources (topic/criteria, channel type, endpoint URL, filters, expiry) | Medium | — | — |
 | 80a | ↳ Notification receiver — Next.js API route (`/api/fhir/notify`) to accept, validate, and persist incoming FHIR notification `Bundle` payloads | Medium | #80 | — |
@@ -177,7 +177,7 @@ All other tasks are unblocked and can be started independently.
 | Effort | Count | Task IDs |
 |---|---|---|
 | Low | 30 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94 |
-| Medium | 30 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 78, 79, 80, 80a, 81, 82, 83, 84, 86 |
+| Medium | 29 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86 |
 | High | 15 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90 |
 
 ---
