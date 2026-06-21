@@ -171,15 +171,167 @@
 
 All other tasks are unblocked and can be started independently.
 
+#96 → #107 are all unblocked and can be started independently.
+
+---
+
+---
+
+## Front-End Architecture Review — Task Details (added Jun 2026)
+
+### #96 · Split `fhir-client.ts` into domain modules
+**Priority:** 🔴 High · **Effort:** Medium · **File:** `src/lib/fhir-client.ts` (5,341 lines)
+
+Refactor into a domain-scoped module tree. Add a barrel `index.ts` that re-exports everything so no call sites need to change on day one.
+
+```
+src/lib/fhir/
+  client.ts        # base fhirRequest(), fhirFetch(), error extraction
+  patients.ts      # patient CRUD, search, photo, merge
+  encounters.ts    # encounter lifecycle, SOAP notes
+  medications.ts   # MedicationRequest, MAR, discharge Rx
+  orders.ts        # lab, radiology
+  appointments.ts
+  subscriptions.ts
+  display.ts       # patientDisplayName(), status colors, date formatters
+  index.ts         # re-exports for backward compatibility
+```
+
+---
+
+### #97 · Add TanStack Query caching layer
+**Priority:** 🔴 High · **Effort:** High
+
+Every page navigation triggers fresh FHIR fetches. The dashboard uses `force-dynamic` which disables all Next.js caching. Install `@tanstack/react-query`, wrap the app in `QueryClientProvider`, and migrate page-level fetches to `useQuery` / `useMutation`.
+
+```ts
+const { data: patient, isLoading } = useQuery({
+  queryKey: ['patient', id],
+  queryFn: () => getPatient(id),
+  staleTime: 30_000,
+})
+```
+
+Benefits: background refetch, deduplication of concurrent calls, optimistic updates, built-in devtools.
+
+---
+
+### #98 · Fix silent error swallowing — error boundaries + explicit error states
+**Priority:** 🔴 High · **Effort:** High
+
+Multiple components suppress errors with `.catch(() => [])`. In a healthcare context an empty list looks identical to "no data recorded" — a failed medication fetch is invisible to the user.
+
+- Add a React Error Boundary at each major route (`patients/[id]`, `encounters/[id]`)
+- Replace silent catches with explicit error state: "Failed to load medications. Retry?"
+- Integrate Sentry (or equivalent) for production error visibility
+
+---
+
+### #99 · Move JWT from `localStorage` to `HttpOnly` cookie
+**Priority:** 🔴 High · **Effort:** High · **File:** `src/lib/auth.ts`
+
+`localStorage` is readable by any XSS payload. The token should only live in an `HttpOnly; SameSite=Strict; Secure` cookie set server-side.
+
+1. Add `POST /api/auth/login` — forwards credentials to FHIR auth, sets HttpOnly cookie on response
+2. Add `POST /api/auth/logout` — clears the cookie
+3. Remove all `localStorage.setItem('auth_token', ...)` calls
+4. `src/app/layout.tsx` already reads the cookie server-side — keep that path, remove the localStorage fallback
+
+---
+
+### #100 · Add test coverage — Jest + RTL + Playwright + msw
+**Priority:** 🔴 High · **Effort:** High
+
+Zero test files exist in the repository.
+
+| Layer | Tool | Target |
+|---|---|---|
+| Unit | Jest | `display.ts` helpers (`patientDisplayName`, age calc, status colors) |
+| Unit | Jest | `searchPatients()` query-routing logic |
+| Component | React Testing Library | `PatientForm` — field validation, EMPI lookup, submit |
+| Component | React Testing Library | `PatientSearch` — debounce, result rendering |
+| E2E | Playwright | Encounter lifecycle: start → SOAP note → close |
+
+Use **msw** (Mock Service Worker) to stub FHIR Bundle responses in unit and component tests.
+
+---
+
+### #101 · Add pagination to all list views
+**Priority:** 🟡 Medium · **Effort:** Medium
+
+All queries use a hardcoded `_count` (20–50) with no "Next / Load more" control. FHIR bundles expose a `next` link for cursor-based pagination.
+
+- Implement `fetchNextPage(bundle)` helper in `fhir-client.ts`
+- Add pagination controls to: patient search, encounter search, and encounter tab cards (conditions, orders, medications)
+
+---
+
+### #102 · Migrate forms to react-hook-form + Zod
+**Priority:** 🟡 Medium · **Effort:** Medium · **File:** `src/components/patients/PatientForm.tsx` and all dialog forms
+
+Manual `useState` across 20+ fields has no per-field dirty/touched tracking and grows fragile. `react-hook-form` gives uncontrolled inputs, built-in dirty tracking, and composable validation. Pair with Zod for both form validation and runtime type-safety on FHIR API responses.
+
+```ts
+const patientSchema = z.object({
+  givenEn: z.string().min(1, "Required"),
+  qid: z.string().regex(/^\d{11}$/, "Must be 11 digits").optional(),
+})
+```
+
+---
+
+### #103 · Replace base64 photo storage with URL/Binary reference
+**Priority:** 🟡 Medium · **Effort:** Low · **File:** `src/lib/fhir-client.ts` — `updatePatientPhoto()`
+
+Storing photos as inline base64 in `Patient.photo[0].data` inflates every `getPatient()` response by hundreds of KB. Upload photos to a CDN or FHIR `Binary` resource and store only the `url` in `Patient.photo[0]`. Fetch lazily in `PatientPhotoAvatar.tsx`.
+
+---
+
+### #104 · Audit and memoize layout component re-renders
+**Priority:** 🟠 Lower · **Effort:** Low · **Files:** `src/components/layout/Header.tsx`, `src/components/layout/Sidebar.tsx`
+
+These components mount on every page. Profile with React DevTools Profiler to find re-renders triggered by unrelated parent state. Apply `React.memo` to stable sub-components and `useCallback` for handlers passed as props.
+
+---
+
+### #105 · Move hardcoded `inquiryusername` header to config/env
+**Priority:** 🟠 Lower · **Effort:** Low · **File:** `src/lib/fhir-client.ts` — base fetch wrapper
+
+The `inquiryusername: pyronis` header is hardcoded. If this is a tenant identifier or credential, move it to `src/lib/config.json` (under a `server` key) or `NEXT_PUBLIC_FHIR_TENANT` environment variable.
+
+---
+
+### #106 · Close notification real-time gap
+**Priority:** 🟠 Lower · **Effort:** Low · **File:** `src/components/layout/Header.tsx` — notification panel
+
+The panel loads notifications once on mount; the badge count goes stale if a webhook fires while the user is on the page. Options (pick one):
+
+- **Short polling:** `setInterval(() => fetchNotifications(), 30_000)` inside a `useEffect` with cleanup
+- **SSE:** Stream events from `src/app/api/fhir/notify/route.ts` via `ReadableStream`
+- **WebSocket:** Connect directly if the FHIR server supports `$websocket-notify`
+
+---
+
+### #107 · Verify `Select.onValueChange` `v ?? ""` coalescing is consistent
+**Priority:** 🟠 Lower · **Effort:** Low
+
+CLAUDE.md documents that `onValueChange` must coerce `null` to `""`. A missed coerce silently stores `null` in state where a string is expected. Audit all usages:
+
+```
+grep -rn "onValueChange" src/ --include="*.tsx"
+```
+
+Fix any handler that does not apply `v ?? ""`.
+
 ---
 
 ## Effort summary
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 30 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94 |
-| Medium | 29 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86 |
-| High | 15 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90 |
+| Low | 34 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 105, 106, 107, 103 |
+| Medium | 32 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102 |
+| High | 19 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99, 100 |
 
 ---
 
@@ -207,3 +359,15 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 37 | Multi-provider encounter participation | 🟡 Medium |
 | 92 | Bilingual informed consent (EN/AR) with translator attestation | 🟡 Medium |
 | 94 | Qatar National Health Number (NHN) identifier + QID validation | 🟡 Medium |
+| 96 | Split `fhir-client.ts` into domain modules | 🔴 High |
+| 97 | Add TanStack Query caching layer | 🔴 High |
+| 98 | Fix silent error swallowing — error boundaries + explicit states | 🔴 High |
+| 99 | Move JWT from `localStorage` to `HttpOnly` cookie | 🔴 High |
+| 100 | Add test coverage — Jest + RTL + Playwright + msw | 🔴 High |
+| 101 | Add pagination to all list views | 🟡 Medium |
+| 102 | Migrate forms to react-hook-form + Zod | 🟡 Medium |
+| 103 | Replace base64 photo storage with URL/Binary reference | 🟡 Medium |
+| 104 | Audit and memoize layout component re-renders | 🟠 Lower |
+| 105 | Move hardcoded `inquiryusername` header to config/env | 🟠 Lower |
+| 106 | Close notification real-time gap (polling or SSE) | 🟠 Lower |
+| 107 | Verify `Select.onValueChange` `v ?? ""` coalescing is consistent | 🟠 Lower |
