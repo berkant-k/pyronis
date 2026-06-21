@@ -64,7 +64,10 @@
       "rxStructured": "http://pyronis.health/fhir/extension/rx-structured",
       "inpatientMed": "http://pyronis.health/fhir/extension/inpatient-med",
       "directiveNotes": "http://pyronis.health/fhir/extension/directive-notes",
-      "practitionerSpecialty": "http://pyronis.health/fhir/extension/practitioner-specialty"
+      "practitionerSpecialty": "http://pyronis.health/fhir/extension/practitioner-specialty",
+      "backportFilterCriteria": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-filter-criteria",
+      "backportHeartbeatPeriod": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-heartbeat-period",
+      "backportPayloadContent": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content"
     },
     "codeSystems": {
       "identifierType": "https://fhir.pyronis.health/CodeSystem/IdentifierTypes",
@@ -105,7 +108,8 @@
       "locationPhysicalType": "http://terminology.hl7.org/CodeSystem/location-physical-type",
       "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
       "healthcareServiceCategory": "https://pyronis.health/fhir/service-category",
-      "deviceType": "https://pyronis.health/fhir/device-type"
+      "deviceType": "https://pyronis.health/fhir/device-type",
+      "subscriptionChannelType": "http://hl7.org/fhir/subscription-channel-type"
     },
     "questionnaires": {
       "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
@@ -154,6 +158,11 @@
         { "code": "PR",  "display": "Preventive Care" },
         { "code": "NR",  "display": "Nursing / Care" },
         { "code": "OT",  "display": "Other" }
+      ],
+      "subscriptionContent": [
+        { "code": "empty",         "label": "Empty (notification only)" },
+        { "code": "id-only",       "label": "ID Only" },
+        { "code": "full-resource", "label": "Full Resource" }
       ],
       "deviceType": [
         { "code": "IMG", "display": "Imaging Equipment" },

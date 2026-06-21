@@ -1,0 +1,35 @@
+{
+  "resourceType": "Subscription",
+  "id": "33814b7f-0b66-4f78-b7b8-b6899e738d05",
+  "status": "active",
+  "end": "2027-06-21T15:53:07.0336329+00:00",
+  "reason": "Test subscription for walkthrough",
+  "criteria": "http://example.org/FHIR/SubscriptionTopic/encounter-complete",
+  "_criteria": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-filter-criteria",
+        "valueString": "Encounter?patient=Patient/example"
+      }
+    ]
+  },
+  "channel": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-heartbeat-period",
+        "valueInteger": 120
+      }
+    ],
+    "type": "rest-hook",
+    "endpoint": "http://localhost:3000/api/fhir/notify",
+    "payload": "application/fhir+json",
+    "_payload": {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/subscriptions-backport/StructureDefinition/backport-payload-content",
+          "valueCode": "full-resource"
+        }
+      ]
+    }
+  }
+}

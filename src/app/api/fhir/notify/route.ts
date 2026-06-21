@@ -14,11 +14,16 @@ async function serverAuthHeaders(): Promise<Record<string, string>> {
 export async function POST(req: NextRequest) {
     // Acknowledge immediately — the FHIR server must not time out waiting for us.
     // We fire-and-forget the storage into the response body so 200 is returned quickly.
+    console.log("[notify] Received notification");
     const fhirBase = process.env.NEXT_PUBLIC_FHIR_BASE_URL;
 
     void (async () => {
         try {
             const body = await req.json();
+            if(!body){
+                console.log("[notify] Received empty body");
+                return;
+            }
 
             // Attach our tag so the inbox can query these bundles later.
             const existingTags: { system?: string; code?: string }[] =
