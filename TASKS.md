@@ -44,6 +44,8 @@
 | 77 | Location definitions — CRUD for `Location` resources (hospital, department, ward, room, bed hierarchy); `locationPhysicalType` and `locationType` in `config.json`; list + search page, detail page with hierarchy links, create / edit / delete; `Locations` added to sidebar nav | Jun 2026 |
 | 78 | HealthcareService definitions — CRUD for `HealthcareService` resources; category/specialty selectors, day-of-week availability toggles, opening/closing times, linked location and organization; `Services` added to sidebar nav | Jun 2026 |
 | 79 | Device definitions — CRUD for `Device` resources; 11 device type options; asset code, UDI, manufacturer, model, serial number fields; linked owner org and location; `Devices` added to sidebar nav | Jun 2026 |
+| 80 | Subscription definitions — R4-style FHIR `Subscription` CRUD; criteria string, channel type, endpoint, payload MIME type, HTTP headers, expiry; "Use this app's webhook" shortcut; `Subscriptions` added to sidebar nav | Jun 2026 |
+| 80a | Notification receiver — `POST /api/fhir/notify` API route; stores incoming bundles back to the FHIR server with a `notification` tag; serverless-safe (reads auth token from cookie, not localStorage); returns 200 immediately | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -96,8 +98,6 @@
 | 34 | In-browser preview for PDF / image attachments                                         | Low    | —          | §24.5, §24.6 |
 | 35 | Serial diagnostic result comparison and trend table                                    | Medium | —          | §24.5        |
 | 37 | Multi-provider encounter participation                                                 | Low    | —          | §24.7        |
-| 80 | Subscription definitions — CRUD for `Subscription` resources (topic/criteria, channel type, endpoint URL, filters, expiry) | Medium | — | — |
-| 80a | ↳ Notification receiver — Next.js API route (`/api/fhir/notify`) to accept, validate, and persist incoming FHIR notification `Bundle` payloads | Medium | #80 | — |
 | 80b | ↳ Notification inbox UI — browse, filter by resource type / date, and acknowledge received notifications | Low | #80a | — |
 | 80c | ↳ Notification routing — navigate to the triggering patient or encounter directly from a notification entry | Low | #80a | — |
 | 80d | ↳ Subscription status panel — per-subscription health badge, error count, and last-delivery timestamp | Low | #80 | — |
@@ -108,6 +108,7 @@
 | 90 | Occupational health module — pre-placement exam, periodic health surveillance, return-to-work clearance, exposure incident report; `EpisodeOfCare` + occupation coding | High | — | — |
 | 92 | Bilingual informed consent — EN/AR `Consent` form generation (`scope=treatment`), translator attestation field, digital or wet-signature capture; required before procedures are performed | Low | — | §4 |
 | 94 | Qatar National Health Number (NHN) — NHN as a second patient identifier alongside QID/MRN; QID format validation (11-digit rule); NHDRP / HIE patient lookup via NHN | Low | — | — |
+| 95 | Topic-based subscriptions (R4B) — upgrade Subscription CRUD to R4B topic-based model; define own `R4BSubscription` / `R4BSubscriptionTopic` interfaces (not in `@medplum/fhirtypes` v4.5.x); `SubscriptionTopic` browser + picker in the form; `filterBy[]` criteria builder; `content` / `contentType` / `heartbeatPeriod` fields; note: blocked until `@medplum/fhirtypes` ships R4B Subscription types or we vendor the interfaces | Medium | — | — |
 
 ---
 
