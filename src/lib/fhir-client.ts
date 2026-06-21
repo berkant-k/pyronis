@@ -28,6 +28,7 @@ import type {
     ServiceRequest,
     Subscription,
     SubscriptionChannel,
+    SubscriptionStatus,
     Task,
 } from "@medplum/fhirtypes";
 import { customAlphabet } from "nanoid";
@@ -5282,3 +5283,60 @@ export async function deleteNotificationBundle(id: string): Promise<void> {
     });
     if (!res.ok && res.status !== 404) throw new Error(`Failed to delete notification: ${res.status}`);
 }
+
+export interface ParsedNotification {
+    bundleId:        string;
+    resourceType:    string | null;
+    resourceId:      string | null;
+    subscriptionRef: string | null;
+    timestamp:       string | null;
+}
+
+export function parseNotificationBundle(bundle: Bundle): ParsedNotification {
+    const first = bundle.entry?.[0]?.resource;
+    const status = first?.resourceType === "SubscriptionStatus"
+        ? (first as SubscriptionStatus)
+        : null;
+
+    const focusRef = status?.notificationEvent?.[0]?.focus?.reference
+        ?? bundle.entry?.[1]?.fullUrl
+        ?? null;
+
+    let resourceType: string | null = null;
+    let resourceId:   string | null = null;
+    if (focusRef) {
+        const parts = focusRef.split("/");
+        resourceId   = parts[parts.length - 1] ?? null;
+        resourceType = parts[parts.length - 2] ?? null;
+    }
+
+    return {
+        bundleId:        bundle.id ?? "",
+        resourceType,
+        resourceId,
+        subscriptionRef: status?.subscription?.reference ?? null,
+        timestamp:       status?.notificationEvent?.[0]?.timestamp
+                         ?? bundle.meta?.lastUpdated
+                         ?? null,
+    };
+}
+
+// Maps FHIR resource types to their UI route prefix.
+export const FHIR_RESOURCE_ROUTES: Record<string, string> = {
+    Encounter:         "/encounters",
+    Patient:           "/patients",
+    Appointment:       "/appointments",
+    Observation:       "/observations",
+    MedicationRequest: "/medications",
+    ServiceRequest:    "/orders",
+    DiagnosticReport:  "/reports",
+    Task:              "/tasks",
+    Flag:              "/flags",
+    Immunization:      "/immunizations",
+    Subscription:      "/subscriptions",
+    Location:          "/locations",
+    Organization:      "/organizations",
+    Practitioner:      "/practitioners",
+    Device:            "/devices",
+    HealthcareService: "/healthcare-services",
+};

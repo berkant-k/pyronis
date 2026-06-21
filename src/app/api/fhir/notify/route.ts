@@ -26,15 +26,11 @@ export async function POST(req: NextRequest) {
             }
 
             // Attach our tag so the inbox can query these bundles later.
-            const existingTags: { system?: string; code?: string }[] =
-                body.meta?.tag ?? [];
             const tagged = {
                 ...body,
                 id: undefined, // force the server to assign a new ID on storage
                 meta: {
-                    ...body.meta,
                     tag: [
-                        ...existingTags.filter((t) => !(t.system === system && t.code === code)),
                         { system, code },
                     ],
                 },

@@ -1,6 +1,8 @@
 # Pyronis EMR
 
-A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **React 19**. It connects directly to a FHIR R4B server (tested against [fhir-candle](https://github.com/FHIR/fhir-candle/)) with no proprietary backend — all clinical operations go through standard FHIR REST APIs.
+A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **React 19**. It connects directly to a FHIR R4B server with no proprietary backend — all clinical operations go through standard FHIR REST APIs.
+
+Pyronis is also a practical learning tool for anyone who wants to understand how FHIR works in a real application. Every resource the UI touches maps directly to a standard FHIR resource type. The built-in **Raw JSON viewer** (available on every detail page) lets you inspect the exact FHIR representation of what you are looking at, and the **Subscription + Notification** module gives you a hands-on way to see how FHIR event-driven workflows behave end to end.
 
 > **Status:** Active development — core clinical workflows are implemented and usable. See the [feature gap analysis](MISSING_FEATURES.md) for what is planned next.
 
@@ -149,10 +151,19 @@ A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **Reac
 - **Tasks / Worklist** — 6 categories, priority, due date, assignee; global and per-patient views
 - **Document Management** — file upload, download, delete; 9 document types
 
-### Directory & Admin
+### Directory & Infrastructure
 - **Practitioner directory** — CRUD, specialties, qualifications, role-to-organisation links
 - **Organisation registry** — CRUD, hierarchy (`partOf`), linked practitioners
+- **Locations** — CRUD for physical sites; status, mode, type, address, managing organisation, part-of hierarchy
+- **Healthcare Services** — CRUD; specialty, availability hours and exceptions, linked location and organisation
+- **Devices** — CRUD; 11 device types, UDI, serial number, manufacturer, model, asset code, linked organisation and location
 - **Settings** — FHIR server URL, eMPI URL configurable at runtime
+
+### Subscriptions & Notifications
+- **Subscriptions** — create and manage FHIR R4 subscriptions using the [R4B Subscriptions Backport IG](http://hl7.org/fhir/uv/subscriptions-backport). Supports topic URL, filter criteria, channel type (rest-hook, websocket, email, SMS, message), payload content level, heartbeat period, and custom HTTP headers.
+- **Webhook endpoint** — `POST /api/fhir/notify` receives incoming notification bundles from the FHIR server, tags them, and re-stores them as `Bundle` resources directly on the FHIR server — no separate database needed.
+- **Live notification panel** — bell icon in the header fetches the latest notification bundles on load. Each notification links directly to the triggering resource. Dismiss removes the bundle from the FHIR server.
+- **Notification inbox** (`/notifications`) — full table of all received notifications with resource type badge, resource link, subscription reference, received timestamp, raw JSON viewer, and individual dismiss.
 
 ### UI
 - Dark-navy sidebar with collapsible icon-only mode (state persisted)
@@ -162,6 +173,48 @@ A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **Reac
 - Raw FHIR JSON viewer on every resource detail page
 - Unified `StatusPill` component across all resource types
 - JWT token login with middleware-protected routes
+
+---
+
+## Learning FHIR with Pyronis
+
+Pyronis is built on vanilla FHIR — every button in the UI maps to a documented FHIR operation. This makes it a useful sandbox for exploring the spec hands-on.
+
+### How each UI action maps to FHIR
+
+| What you do in the UI | What happens on the FHIR server |
+|---|---|
+| Register a patient | `POST /Patient` with MRN identifier, extensions, bilingual names |
+| Open a patient record | `GET /Patient/{id}` |
+| Start an encounter | `POST /Encounter` with `subject` reference to the patient |
+| Record a vital sign | `POST /Observation` with LOINC `code`, `valueQuantity`, linked `encounter` |
+| Add a diagnosis | `POST /Condition` with `clinicalStatus`, `code` (ICD-10), `encounter` context |
+| Prescribe a medication | `POST /MedicationRequest` with structured dosage |
+| Record administration | `POST /MedicationAdministration` referencing the order |
+| Upload a document | `POST /DocumentReference` with `content[0].attachment.data` (base64) |
+| Create a location | `POST /Location` with address, type, status, managing organisation |
+| Create a device | `POST /Device` with UDI carrier, device name, manufacturer, linked location |
+| Create a subscription | `POST /Subscription` with backport IG extensions for topic and filter |
+| Receive a notification | FHIR server `POST`s a `Bundle` to `/api/fhir/notify`; re-stored with a tag |
+
+### Exploring raw FHIR resources
+
+Every detail page has a **"{ } JSON"** button that opens the raw FHIR resource exactly as it is stored on the server. This is the fastest way to see how a UI concept translates into FHIR JSON without calling the API directly. Try it on a Patient after adding an Arabic name, or on a Subscription to see the backport IG extensions in place.
+
+### Subscriptions walkthrough
+
+The Subscriptions module gives a hands-on view of FHIR event-driven workflows:
+
+1. **Create a subscription** at `/subscriptions/new`. Set the topic to a SubscriptionTopic canonical URL your server supports. Set the endpoint to `<your-app-url>/api/fhir/notify` — the "Use this app's webhook" button fills this in automatically.
+2. **Trigger an event** — create or update the resource type the subscription watches.
+3. **Check the inbox** at `/notifications`. The notification bundle the FHIR server delivered will appear there, showing the resource type, ID, and a direct link to the resource's detail page.
+4. **Inspect the raw bundle** using the JSON viewer to see the `SubscriptionStatus` entry, `notificationEvent[].focus` reference, and the tagged `meta`.
+
+### Recommended companion tools
+
+- **[fhir-candle](https://github.com/FHIR/fhir-candle)** — lightweight .NET FHIR server with a built-in web UI for browsing stored resources. Tested and recommended for local development.
+- **[FHIR R4B specification](https://hl7.org/fhir/R4B/)** — the reference for every resource type Pyronis uses.
+- **[Subscriptions Backport IG](http://hl7.org/fhir/uv/subscriptions-backport)** — describes the extension pattern Pyronis uses for topic-based subscriptions on R4/R4B servers.
 
 ---
 
@@ -183,14 +236,15 @@ A FHIR-native Electronic Medical Records UI built with **Next.js 16** and **Reac
 ## Prerequisites
 
 - **Node.js** 20+ and npm
-- A running **FHIR server** — [fhir-candle](https://github.com/FHIR/fhir-candle) is the tested and recommended for testing purposes. 
+- A running **FHIR server** — [fhir-candle](https://github.com/FHIR/fhir-candle) is the tested and recommended option for local development.
 
-Start a local fhir-candle as .Net tool:
+Start a local fhir-candle as a .NET tool:
 
 ```bash
 fhir-candle -o
 ```
-if you don't have the tool installed.
+
+If you don't have the tool installed:
 
 ```bash
 dotnet tool install --global fhir-candle
@@ -264,12 +318,19 @@ src/
     appointments/        Appointment list + calendar
     practitioners/       Practitioner directory
     organizations/       Organisation registry
+    locations/           Location CRUD
+    healthcare-services/ Healthcare Service CRUD
+    devices/             Device CRUD
+    subscriptions/       Subscription CRUD
+    notifications/       Notification inbox
     questionnaires/      Questionnaire library
     tasks/               Global task worklist
     reports/ orders/ medications/ flags/ ...
+    api/fhir/notify/     POST endpoint — receives and stores FHIR notification bundles
   components/
     patients/            PatientForm, PatientSearch
-    layout/              Sidebar, Header
+    notifications/       DismissNotificationButton
+    layout/              Sidebar, Header (with live NotificationPanel)
     ui/                  Shared primitives (PatientBanner, StatusPill, RawFhirDialog, …)
     reports/ orders/ ... Feature-specific cards and dialogs
   lib/
@@ -290,6 +351,31 @@ src/
 - Bilingual names — Arabic name is a second `Patient.name` entry carrying the HL7 language extension (`valueCode: "ar"`).
 - MRN generation uses `nanoid` `customAlphabet("0123456789", 10)` — CSPRNG, no server round-trip, collision-safe.
 - All deployment-configurable values (identifier systems, extension URIs, code lists) live in `src/lib/config.json`.
+
+### Subscription & notification flow
+
+```
+FHIR server                          Pyronis
+────────────────────────────────     ────────────────────────────────────────
+Subscription resource created   ←    POST /Subscription (via subscriptions UI)
+Resource event fires            →    FHIR server POSTs to /api/fhir/notify
+                                     Route tags bundle, re-POSTs to FHIR server
+                                     as Bundle with tag=notification
+Notification inbox loads        ←    GET /Bundle?_tag=notification&_sort=-_lastUpdated
+Resource link clicked           ←    Parsed from SubscriptionStatus.notificationEvent[].focus
+```
+
+Notification bundles are stored directly on the FHIR server — no additional database is needed.
+
+### R4B Subscriptions Backport IG
+
+`@medplum/fhirtypes` ships R4 `Subscription` types which do not include the R4B `topic` or `filterBy` fields. Pyronis uses the [Subscriptions Backport IG](http://hl7.org/fhir/uv/subscriptions-backport) extension pattern to attach these on the R4 shadow elements (`_criteria`, `channel._payload`, `channel.extension`). Three accessor helpers in `fhir-client.ts` parse the extensions back out:
+
+```typescript
+subscriptionFilterCriteria(sub)  // → backport-filter-criteria extension value
+subscriptionHeartbeat(sub)        // → backport-heartbeat-period extension value
+subscriptionPayloadContent(sub)   // → backport-payload-content extension value
+```
 
 ---
 
