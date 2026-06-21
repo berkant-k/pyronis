@@ -39,7 +39,11 @@ import {
   EXT_ADMIN_NOTES,
   EXT_CADAVERIC_DONOR,
   EXT_BIRTH_PLACE,
+  getEncounterTriageAcuity,
+  triageAcuityColor,
+  triageAcuityLabel,
 } from "@/lib/fhir-client";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -376,6 +380,12 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                 Encounter In Progress
+                {(() => {
+                  const code = getEncounterTriageAcuity(activeEncounter);
+                  return code ? (
+                    <StatusPill color={triageAcuityColor(code)} label={triageAcuityLabel(code)} className="text-[10px] py-0 px-1.5" />
+                  ) : null;
+                })()}
                 <ChevronRight className="h-3 w-3" />
               </Link>
             ) : (

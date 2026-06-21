@@ -40,6 +40,7 @@
 | 33 | Emergency contact quick access — RelatedPerson contacts (codes C/EP/N) shown as a strip in the patient header card with name, relationship, tel: link | Jun 2026 |
 | 38 | Encounter search by practitioner — `practitionerQuery` added to `EncounterSearchParams` and `searchEncounters`; practitioner name input in `EncounterSearch` filter bar | Jun 2026 |
 | 76 | Auto-assign MRN on edit — `updatePatient` generates a new MRN when the existing resource has none and the form field is empty | Jun 2026 |
+| 85 | Triage acuity capture — 5-level ESI selector and chief complaint on encounter start; `Encounter.priority` coded with `https://pyronis.health/fhir/triage-acuity`; acuity pill in `EncounterPatientBar` (Row 2), encounter list table, patient header active-encounter chip, and encounter Details tab | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -59,7 +60,6 @@
 | 53 | Billing — `Coverage`, `ChargeItem`, and `Claim` resources | High | #83 | §7 |
 | 83 | Insurance pre-authorization — PA request/response tied to `ServiceRequest` / `MedicationRequest`; approval reference number, payer, status (pending / approved / denied / expired), expiry tracking; PA status badge visible at order entry | Medium | #3 | — |
 | 84 | Medical fitness certificate — pre-employment exam template (TB/chest X-ray, HIV, hepatitis B/C, syphilis, general fitness); MoPH-format certificate print/PDF; batch processing support for occupational health clinics | Medium | — | — |
-| 85 | Triage acuity capture — 5-level ESI/MTS selector and structured chief complaint field on encounter start; triage timestamp on `Encounter.priority` + `Encounter.reasonCode`; acuity badge on encounter list and patient header active-encounter chip | Low | — | — |
 | 88 | HL7 v2 LIS/RIS bridge — ORM message export for lab/rad `ServiceRequest`; ORU inbound parser to auto-create `DiagnosticReport` + `Observation` from lab result messages; implemented as a Next.js API route or sidecar service | High | — | — |
 | 89 | Pharmacist verification — verification status on `MedicationRequest` (pending-pharmacist / pharmacist-verified / dispensed); pharmacist role action to verify; block MAR administration recording on unverified orders | Low | — | — |
 | 91 | Discharge Against Medical Advice (DAMA) — DAMA flag on encounter discharge (`Encounter.hospitalization.dischargeDisposition` code `aadvice`); required clinician and witness attestation fields; printable MoPH-format DAMA form | Low | — | — |
@@ -176,7 +176,7 @@ All other tasks are unblocked and can be started independently.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 31 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 85, 89, 91, 92, 93, 94 |
+| Low | 30 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94 |
 | Medium | 31 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 77, 78, 79, 80, 80a, 81, 82, 83, 84, 86 |
 | High | 15 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90 |
 
@@ -189,7 +189,6 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | # | Task | Priority |
 |---|---|---|
 | 1 | Allergy–drug conflict alert at prescribing time | 🔴 High |
-| 85 | Triage acuity capture (ESI/MTS) on encounter start | 🔴 High |
 | 89 | Pharmacist verification on MedicationRequest | 🔴 High |
 | 91 | Discharge Against Medical Advice (DAMA) flag + form | 🔴 High |
 | 93 | Asia/Qatar timezone fix across all date/time display | 🔴 High |

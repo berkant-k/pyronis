@@ -97,7 +97,8 @@
       "participationType": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
       "allergyClinical": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
       "allergyVerification": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
-      "cvx": "http://hl7.org/fhir/sid/cvx"
+      "cvx": "http://hl7.org/fhir/sid/cvx",
+      "triageAcuity": "https://pyronis.health/fhir/triage-acuity"
     },
     "questionnaires": {
       "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
@@ -117,6 +118,13 @@
         {"code": "VIS", "display": "Visitor"},
         {"code": "DIP", "display": "Diplomat"},
         {"code": "STD", "display": "Student"}
+      ],
+      "triageAcuity": [
+        { "code": "1", "display": "ESI 1 — Immediate" },
+        { "code": "2", "display": "ESI 2 — Emergent" },
+        { "code": "3", "display": "ESI 3 — Urgent" },
+        { "code": "4", "display": "ESI 4 — Less Urgent" },
+        { "code": "5", "display": "ESI 5 — Non-Urgent" }
       ],
       "ethnicity": [
         {"code": "90027003", "display": "Arab", "system": "http://snomed.info/sct"},

@@ -13,6 +13,7 @@ import {
   patientPhotoDataUrl,
   getEncounterVisitId,
   formatDateTime,
+  getEncounterTriageAcuity,
   EXT_VIP,
   EXT_CADAVERIC_DONOR,
 } from "@/lib/fhir-client"
@@ -27,6 +28,14 @@ const STATUS_MAP: Record<string, { label: string; dot: string; pill: string }> =
   "planned":          { label: "Planned",     dot: "bg-blue-500",  pill: "bg-blue-100 text-blue-700 border-blue-200"     },
   "on-hold":          { label: "On Hold",     dot: "bg-amber-500", pill: "bg-amber-100 text-amber-700 border-amber-200"  },
   "entered-in-error": { label: "Error",       dot: "bg-red-300",   pill: "bg-red-50 text-red-400 border-red-100"         },
+}
+
+const TRIAGE_MAP: Record<string, { label: string; pill: string }> = {
+  "1": { label: "ESI 1 — Immediate",   pill: "bg-red-100    text-red-700    border-red-200"    },
+  "2": { label: "ESI 2 — Emergent",    pill: "bg-orange-100 text-orange-700 border-orange-200" },
+  "3": { label: "ESI 3 — Urgent",      pill: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  "4": { label: "ESI 4 — Less Urgent", pill: "bg-green-100  text-green-700  border-green-200"  },
+  "5": { label: "ESI 5 — Non-Urgent",  pill: "bg-blue-100   text-blue-700   border-blue-200"   },
 }
 
 const CLASS_LABELS: Record<string, string> = {
@@ -85,6 +94,8 @@ export function EncounterPatientBar({ patient, patientId, encounter, activeFlags
   const typeLabel  = encounter.type?.[0]?.coding?.[0]?.display ?? encounter.type?.[0]?.text ?? null
   const classLabel = CLASS_LABELS[encounter.class?.code ?? ""] ?? encounter.class?.display ?? encounter.class?.code ?? null
   const visitId    = getEncounterVisitId(encounter)
+  const triageCode = getEncounterTriageAcuity(encounter)
+  const triage     = triageCode ? TRIAGE_MAP[triageCode] : null
   const start      = encounter.period?.start
   const end        = encounter.period?.end
   const duration   = start && end ? durationLabel(start, end) : null
@@ -206,6 +217,16 @@ export function EncounterPatientBar({ patient, patientId, encounter, activeFlags
           <span className={cn("mr-1 h-1.5 w-1.5 rounded-full shrink-0", s.dot)} />
           {s.label}
         </span>
+
+        {/* Triage acuity */}
+        {triage && (
+          <span className={cn(
+            "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0",
+            triage.pill
+          )}>
+            {triage.label}
+          </span>
+        )}
 
         {/* Visit ID */}
         {visitId && (

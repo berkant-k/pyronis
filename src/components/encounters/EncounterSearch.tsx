@@ -10,6 +10,9 @@ import {
   getPatientMRN,
   getEncounterVisitId,
   encounterStatusColor,
+  getEncounterTriageAcuity,
+  triageAcuityColor,
+  triageAcuityLabel,
   type EncounterWithPatient,
 } from "@/lib/fhir-client";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -264,6 +267,7 @@ export function EncounterSearch() {
                   <TableHead>Visit ID</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Class</TableHead>
+                  <TableHead>Triage</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-32">Date</TableHead>
                 </TableRow>
@@ -274,6 +278,7 @@ export function EncounterSearch() {
                   const mrn = p ? getPatientMRN(p) : null;
                   const visitId = getEncounterVisitId(enc);
                   const href = enc.id ? `/encounters/${enc.id}` : null;
+                  const triageCode = getEncounterTriageAcuity(enc);
 
                   return (
                     <TableRow
@@ -312,6 +317,13 @@ export function EncounterSearch() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground capitalize">
                         {classLabel(enc)}
+                      </TableCell>
+                      <TableCell>
+                        {triageCode ? (
+                          <StatusPill color={triageAcuityColor(triageCode)} label={triageAcuityLabel(triageCode)} />
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={enc.status} />

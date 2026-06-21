@@ -12,7 +12,14 @@ import type {
   ServiceRequest,
   Condition,
 } from "@medplum/fhirtypes"
-import { formatDate, formatDateTime } from "@/lib/fhir-client"
+import {
+  formatDate,
+  formatDateTime,
+  getEncounterTriageAcuity,
+  triageAcuityColor,
+  triageAcuityLabel,
+} from "@/lib/fhir-client"
+import { StatusPill } from "@/components/ui/StatusPill"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -344,16 +351,23 @@ function EncounterDetailsCard({ encounter }: { encounter: Encounter }) {
               }
             />
           )}
-          {encounter.priority && (
-            <DetailRow
-              label="Priority"
-              value={
-                encounter.priority.coding?.[0]?.display ??
-                encounter.priority.text ??
-                "—"
-              }
-            />
-          )}
+          {encounter.priority && (() => {
+            const code = getEncounterTriageAcuity(encounter);
+            return (
+              <div>
+                <dt className="text-xs font-medium text-muted-foreground mb-1">Triage acuity</dt>
+                <dd>
+                  {code ? (
+                    <StatusPill color={triageAcuityColor(code)} label={triageAcuityLabel(code)} />
+                  ) : (
+                    <span className="text-sm">
+                      {encounter.priority.coding?.[0]?.display ?? encounter.priority.text ?? "—"}
+                    </span>
+                  )}
+                </dd>
+              </div>
+            );
+          })()}
           {hasStart && (
             <DetailRow label="Started" value={formatDateTime(encounter.period?.start)} />
           )}
