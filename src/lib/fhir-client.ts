@@ -5098,3 +5098,26 @@ export function deviceToFormState(dev: Device): DeviceFormState {
         note:         dev.note?.[0]?.text ?? "",
     };
 }
+
+// ─── Notification bundles ────────────────────────────────────────────────────
+
+const NOTIFICATION_TAG = `${config.notifications.tag.system}|${config.notifications.tag.code}`;
+
+export async function getNotificationBundles(count = 50): Promise<Bundle[]> {
+    const outer = await fhirFetch<Bundle>("Bundle", {
+        _tag: NOTIFICATION_TAG,
+        _sort: "-_lastUpdated",
+        _count: String(count),
+    });
+    return (outer.entry ?? [])
+        .map((e) => e.resource as Bundle)
+        .filter((r): r is Bundle => r?.resourceType === "Bundle");
+}
+
+export async function deleteNotificationBundle(id: string): Promise<void> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Bundle/${id}`, {
+        method: "DELETE",
+        headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 404) throw new Error(`Failed to delete notification: ${res.status}`);
+}

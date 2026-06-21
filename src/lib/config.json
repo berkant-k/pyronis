@@ -230,6 +230,12 @@
       ]
     }
   },
+  "notifications": {
+    "tag": {
+      "system": "https://pyronis.health/fhir/tag",
+      "code": "notification"
+    }
+  },
   "empi": {
     "storageKey": "pyronis_empi_base_url"
   },
