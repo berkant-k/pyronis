@@ -11,6 +11,7 @@ import type {
     FamilyMemberHistory,
     Flag,
     Immunization,
+    Location,
     MedicationAdministration,
     MedicationRequest,
     Observation,
@@ -4648,4 +4649,165 @@ export async function deleteQuestionnaireResponse(id: string): Promise<void> {
         headers: await authHeaders(),
     });
     if (!res.ok && res.status !== 404) throw new Error(`Failed to delete QuestionnaireResponse: ${res.status}`);
+}
+
+// ─── Location ─────────────────────────────────────────────────────────────────
+
+const LOCATION_ID_SYSTEM = config.fhir.identifierSystems.location;
+
+export interface NewLocationInput {
+    name: string;
+    identifier?: string;
+    description?: string;
+    status?: "active" | "suspended" | "inactive";
+    physicalType?: string;
+    type?: string;
+    partOfId?: string;
+    managingOrganizationId?: string;
+    addressText?: string;
+    addressCity?: string;
+    addressCountry?: string;
+    phone?: string;
+}
+
+export interface LocationFormState {
+    identifier: string;
+    name: string;
+    description: string;
+    status: string;
+    physicalType: string;
+    type: string;
+    partOfId: string;
+    partOfName: string;
+    managingOrganizationId: string;
+    managingOrganizationName: string;
+    addressText: string;
+    addressCity: string;
+    addressCountry: string;
+    phone: string;
+}
+
+function buildLocationBody(input: NewLocationInput, id?: string): Location {
+    const physOpt = config.fhir.options.locationPhysicalType.find((t) => t.code === input.physicalType);
+    const typeOpt = config.fhir.options.locationType.find((t) => t.code === input.type);
+    return {
+        resourceType: "Location",
+        ...(id ? { id } : {}),
+        name: input.name.trim(),
+        status: (input.status ?? "active") as Location["status"],
+        ...(input.identifier?.trim() ? { identifier: [{ system: LOCATION_ID_SYSTEM, value: input.identifier.trim() }] } : {}),
+        ...(input.description?.trim() ? { description: input.description.trim() } : {}),
+        ...(input.physicalType ? {
+            physicalType: {
+                coding: [{ system: config.fhir.codeSystems.locationPhysicalType, code: input.physicalType, display: physOpt?.display }],
+                text: physOpt?.display ?? input.physicalType,
+            },
+        } : {}),
+        ...(input.type ? {
+            type: [{
+                coding: [{ system: config.fhir.codeSystems.locationType, code: input.type, display: typeOpt?.display }],
+                text: typeOpt?.display ?? input.type,
+            }],
+        } : {}),
+        ...(input.partOfId ? { partOf: { reference: `Location/${input.partOfId}` } } : {}),
+        ...(input.managingOrganizationId ? { managingOrganization: { reference: `Organization/${input.managingOrganizationId}` } } : {}),
+        ...(input.phone?.trim() ? { telecom: [{ system: "phone" as const, value: input.phone.trim() }] } : {}),
+        ...((input.addressText || input.addressCity || input.addressCountry) ? {
+            address: {
+                text: input.addressText?.trim(),
+                city: input.addressCity?.trim(),
+                country: input.addressCountry?.trim(),
+            },
+        } : {}),
+    };
+}
+
+export async function getLocation(id: string): Promise<Location> {
+    return fhirFetch<Location>(`Location/${id}`);
+}
+
+export async function searchLocations(query?: string): Promise<Location[]> {
+    const params: Record<string, string> = { _count: "100", _sort: "name" };
+    if (query?.trim()) params.name = query.trim();
+    const bundle = await fhirFetch<Bundle>("Location", params);
+    return (bundle.entry ?? [])
+        .map((e) => e.resource as Location)
+        .filter((r): r is Location => r?.resourceType === "Location");
+}
+
+export async function createLocation(input: NewLocationInput): Promise<Location> {
+    const body = buildLocationBody(input);
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Location`, {
+        method: "POST",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Failed to create location: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<Location>;
+}
+
+export async function updateLocation(id: string, input: NewLocationInput): Promise<Location> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Location/${id}`, {
+        method: "PUT",
+        headers: await authHeaders({ "Content-Type": "application/fhir+json", Accept: "application/fhir+json", prefer: "return=representation" }),
+        body: JSON.stringify(buildLocationBody(input, id)),
+    });
+    if (!res.ok) throw new Error(`Failed to update location: ${res.status} ${await res.text()}`);
+    return res.json() as Promise<Location>;
+}
+
+export async function deleteLocation(id: string): Promise<void> {
+    const res = await fhirRequest(`${getFhirBaseUrl()}/Location/${id}`, {
+        method: "DELETE",
+        headers: await authHeaders(),
+    });
+    if (!res.ok && res.status !== 404) throw new Error(`Failed to delete location: ${res.status}`);
+}
+
+export function locationDisplayName(loc: Location): string {
+    return loc.name ?? "Unknown Location";
+}
+
+export function locationPhysicalTypeLabel(loc: Location): string | null {
+    const code = loc.physicalType?.coding?.[0]?.code;
+    if (!code) return null;
+    return config.fhir.options.locationPhysicalType.find((t) => t.code === code)?.display
+        ?? loc.physicalType?.text
+        ?? code;
+}
+
+export function locationTypeLabel(loc: Location): string | null {
+    const code = loc.type?.[0]?.coding?.[0]?.code;
+    if (!code) return null;
+    return config.fhir.options.locationType.find((t) => t.code === code)?.display
+        ?? loc.type?.[0]?.text
+        ?? code;
+}
+
+export function locationStatusColor(status: string | undefined): StatusColor {
+    const map: Record<string, StatusColor> = {
+        active:    "green",
+        suspended: "amber",
+        inactive:  "slate",
+    };
+    return map[status ?? ""] ?? "muted";
+}
+
+export function locationToFormState(loc: Location): LocationFormState {
+    return {
+        identifier:              loc.identifier?.find((i) => i.system === LOCATION_ID_SYSTEM)?.value ?? loc.identifier?.[0]?.value ?? "",
+        name:                    loc.name ?? "",
+        description:             loc.description ?? "",
+        status:                  loc.status ?? "active",
+        physicalType:            loc.physicalType?.coding?.[0]?.code ?? "",
+        type:                    loc.type?.[0]?.coding?.[0]?.code ?? "",
+        partOfId:                parseFhirId(loc.partOf?.reference, "Location") ?? "",
+        partOfName:              loc.partOf?.display ?? "",
+        managingOrganizationId:  parseFhirId(loc.managingOrganization?.reference, "Organization") ?? "",
+        managingOrganizationName: loc.managingOrganization?.display ?? "",
+        addressText:             loc.address?.text ?? "",
+        addressCity:             loc.address?.city ?? "",
+        addressCountry:          loc.address?.country ?? "",
+        phone:                   loc.telecom?.find((t) => t.system === "phone")?.value ?? "",
+    };
 }

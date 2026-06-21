@@ -25,6 +25,7 @@ import {
   ClipboardList,
   PanelLeftClose,
   PanelLeftOpen,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -46,6 +47,7 @@ const navItems = [
   { href: "/tasks",         label: "Worklist",      icon: ListTodo },
   { href: "/practitioners",  label: "Practitioners",  icon: Stethoscope },
   { href: "/organizations",  label: "Organizations",  icon: Building2 },
+  { href: "/locations",      label: "Locations",      icon: MapPin },
   { href: "/questionnaires", label: "Questionnaires", icon: ClipboardList },
 ];
 
