@@ -179,21 +179,25 @@ All other tasks are unblocked and can be started independently.
 
 ## Front-End Architecture Review — Task Details (added Jun 2026)
 
-### #96 · Split `fhir-client.ts` into domain modules
+### #96 · Split `fhir-client.ts` into domain modules ✅ Done
 **Priority:** 🔴 High · **Effort:** Medium · **File:** `src/lib/fhir-client.ts` (5,341 lines)
 
 Refactor into a domain-scoped module tree. Add a barrel `index.ts` that re-exports everything so no call sites need to change on day one.
 
+**Completed Jun 2026.** `src/lib/fhir-client.ts` is now a 3-line barrel (`export * from "./fhir"`). All implementation lives in:
+
 ```
 src/lib/fhir/
-  client.ts        # base fhirRequest(), fhirFetch(), error extraction
-  patients.ts      # patient CRUD, search, photo, merge
-  encounters.ts    # encounter lifecycle, SOAP notes
-  medications.ts   # MedicationRequest, MAR, discharge Rx
-  orders.ts        # lab, radiology
-  appointments.ts
-  subscriptions.ts
-  display.ts       # patientDisplayName(), status colors, date formatters
+  client.ts        # fhirRequest(), fhirFetch(), URL resolution, shared constants
+  patients.ts      # patient CRUD, search, photo, merge, vitals, observations
+  encounters.ts    # encounter lifecycle, SOAP notes, encounter search
+  medications.ts   # MedicationRequest, MAR, discharge Rx, inpatient Rx
+  orders.ts        # lab, radiology, procedures, diagnostics, tasks, documents, referrals
+  appointments.ts  # appointment CRUD and status transitions
+  clinical.ts      # allergies, conditions, immunizations, flags, family history, directives, QRs
+  admin.ts         # practitioners, organizations, roles, locations, healthcare services, devices
+  subscriptions.ts # subscriptions and notification bundles
+  display.ts       # patientDisplayName(), status colors, date formatters, dashboard
   index.ts         # re-exports for backward compatibility
 ```
 
@@ -359,7 +363,7 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 37 | Multi-provider encounter participation | 🟡 Medium |
 | 92 | Bilingual informed consent (EN/AR) with translator attestation | 🟡 Medium |
 | 94 | Qatar National Health Number (NHN) identifier + QID validation | 🟡 Medium |
-| 96 | Split `fhir-client.ts` into domain modules | 🔴 High |
+| 96 | Split `fhir-client.ts` into domain modules | ✅ Done |
 | 97 | Add TanStack Query caching layer | 🔴 High |
 | 98 | Fix silent error swallowing — error boundaries + explicit states | 🔴 High |
 | 99 | Move JWT from `localStorage` to `HttpOnly` cookie | 🔴 High |
