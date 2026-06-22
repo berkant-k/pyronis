@@ -32,7 +32,6 @@ const DIAGNOSTIC_REPORT_ID_SYSTEM = config.fhir.identifierSystems.diagnosticRepo
 const TASK_ID_SYSTEM = config.fhir.identifierSystems.task;
 const DOCUMENT_REF_ID_SYSTEM = config.fhir.identifierSystems.documentRef;
 const TASK_CAT_SYSTEM = config.fhir.codeSystems.taskCategory;
-const DOC_TYPE_SYSTEM_CONST = config.fhir.codeSystems.documentType;
 const REFERRAL_CAT_SYSTEM = config.fhir.codeSystems.referralCategory;
 const REFERRAL_CAT_CODE = "referral";
 const REFERRAL_SPECIALTY_SYSTEM = config.fhir.codeSystems.referralSpecialty;

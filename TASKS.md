@@ -171,7 +171,12 @@
 
 All other tasks are unblocked and can be started independently.
 
-#96 → #107 are all unblocked and can be started independently.
+#96 → #107 are all unblocked and can be started independently, except:
+
+#100a  Test infrastructure
+ ├── blocks #100b  Unit tests (display helpers + searchPatients)
+ ├── blocks #100c  Component tests (PatientForm + PatientSearch)
+ └── blocks #100d  E2E tests (encounter lifecycle)
 
 ---
 
@@ -246,17 +251,90 @@ Multiple components suppress errors with `.catch(() => [])`. In a healthcare con
 ### #100 · Add test coverage — Jest + RTL + Playwright + msw
 **Priority:** 🔴 High · **Effort:** High
 
-Zero test files exist in the repository.
+Zero test files exist in the repository. Split into four sequential subtasks — complete `#100a` first, then `#100b`–`#100d` can proceed independently.
 
-| Layer | Tool | Target |
-|---|---|---|
-| Unit | Jest | `display.ts` helpers (`patientDisplayName`, age calc, status colors) |
-| Unit | Jest | `searchPatients()` query-routing logic |
-| Component | React Testing Library | `PatientForm` — field validation, EMPI lookup, submit |
-| Component | React Testing Library | `PatientSearch` — debounce, result rendering |
-| E2E | Playwright | Encounter lifecycle: start → SOAP note → close |
+| Subtask | Layer | Tool | Target |
+|---|---|---|---|
+| #100a | Infrastructure | — | Install all test packages; configure Jest, Playwright, and msw |
+| #100b | Unit | Jest + msw | `display.ts` helpers + `searchPatients()` query routing |
+| #100c | Component | RTL + msw | `PatientForm` field validation, EMPI lookup, submit; `PatientSearch` debounce + results |
+| #100d | E2E | Playwright | Encounter lifecycle: start → SOAP note → close |
 
-Use **msw** (Mock Service Worker) to stub FHIR Bundle responses in unit and component tests.
+---
+
+### #100a · Test infrastructure setup
+**Priority:** 🔴 High · **Effort:** Low · **Blocks:** #100b, #100c, #100d
+
+Install and configure all test tooling. No test files are written in this step.
+
+**Packages to install (devDependencies):**
+
+| Package | Purpose |
+|---|---|
+| `jest`, `jest-environment-jsdom` | Test runner + browser-like DOM |
+| `@swc/jest`, `@swc/core` | Fast TypeScript transform (replaces ts-jest) |
+| `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event` | RTL + custom matchers + user interaction |
+| `msw` | Mock Service Worker — stubs `fetch` at the network layer |
+| `@playwright/test` | E2E test runner |
+| `@types/jest` | TypeScript types for Jest |
+
+**Files to create:**
+- `jest.config.ts` — module name mapper for `@/` alias, `jsdom` environment, `jest.setup.ts` setup file
+- `jest.setup.ts` — imports `@testing-library/jest-dom`; starts the msw server
+- `src/__tests__/mocks/handlers.ts` — shared msw request handlers for FHIR Bundle stubs
+- `playwright.config.ts` — base URL `http://localhost:3000`, one project (chromium), screenshot on failure
+- Add `"test": "jest"` and `"test:e2e": "playwright test"` to `package.json` scripts
+
+---
+
+### #100b · Unit tests — display helpers + searchPatients routing
+**Priority:** 🔴 High · **Effort:** Low · **Blocked by:** #100a
+
+Target files: `src/lib/fhir/display.ts`, `src/lib/fhir/patients.ts`
+
+Test file: `src/__tests__/unit/display.test.ts`
+- `patientDisplayName` — English name selected over Arabic (language extension), prefix + given + family joined, fallback `"Unknown Patient"`
+- `patientAge` — birthday today, month boundary, missing `birthDate` returns `"—"`
+- `formatDate` / `formatDateTime` — known date string → expected locale string
+- `formatRelativeTime` — use fake timers to freeze `Date.now()` and assert each time band (min, hr, day, month, yr)
+
+Test file: `src/__tests__/unit/searchPatients.test.ts`
+- Pure letter input → only `?name=` query fires
+- All-digit ≥ 7 chars → `?identifier=` AND `?phone=` both fire
+- `MRN-001234` → prefix stripped → `?identifier=001234`
+- Short alphanumeric → `?identifier=` only
+- Empty string → returns `[]` immediately, no fetch
+
+Use msw handlers from `src/__tests__/mocks/handlers.ts` to return fixture `Bundle` responses.
+
+---
+
+### #100c · Component tests — PatientForm + PatientSearch
+**Priority:** 🔴 High · **Effort:** Medium · **Blocked by:** #100a
+
+Test file: `src/__tests__/components/PatientSearch.test.tsx`
+- Type a name → debounce triggers → msw returns a `Bundle` with one patient → patient row renders
+- Clearing input → results list disappears
+- msw returns empty `Bundle` → "No results" empty state renders
+
+Test file: `src/__tests__/components/PatientForm.test.tsx`
+- Submit with empty `givenEn` → required validation error shown, no FHIR call made
+- Enter an 11-digit QID → no error; enter 10 digits → QID format error shown
+- Fill minimum required fields + submit → `createPatient` fetch intercepted by msw → success toast fires
+- Edit mode: form pre-populates with `defaultValues` from the passed `Patient` fixture
+
+---
+
+### #100d · E2E tests — Encounter lifecycle
+**Priority:** 🔴 High · **Effort:** Medium · **Blocked by:** #100a
+
+Runs against the real local HAPI instance (no msw). Requires `npm run dev` or `npm start` running on port 3000.
+
+Test file: `e2e/encounter.spec.ts`
+
+1. **Start encounter** — navigate to a known test patient → click "Start Encounter" → fill service type + chief complaint → confirm → encounter page opens with status `in-progress`
+2. **Add SOAP note** — on the encounter page, open the SOAP note form → fill Subjective + Objective + Assessment + Plan → save → note appears in the Notes tab
+3. **Close encounter** — click "Close Encounter" → select discharge disposition → confirm → encounter status shows `finished`
 
 ---
 
@@ -333,9 +411,9 @@ Fix any handler that does not apply `v ?? ""`.
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 34 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 105, 106, 107, 103 |
-| Medium | 32 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102 |
-| High | 19 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99, 100 |
+| Low | 36 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 105, 106, 107, 103, 100a, 100b |
+| Medium | 34 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102, 100c, 100d |
+| High | 18 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99 |
 
 ---
 
@@ -367,7 +445,10 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 97 | Add TanStack Query caching layer | 🔴 High |
 | 98 | Fix silent error swallowing — error boundaries + explicit states | 🔴 High |
 | 99 | Move JWT from `localStorage` to `HttpOnly` cookie | 🔴 High |
-| 100 | Add test coverage — Jest + RTL + Playwright + msw | 🔴 High |
+| 100a | Test infrastructure — Jest + @swc/jest + RTL + msw + Playwright config | 🔴 High |
+| 100b | Unit tests — `display.ts` helpers + `searchPatients()` routing | 🔴 High |
+| 100c | Component tests — `PatientForm` + `PatientSearch` (RTL + msw) | 🔴 High |
+| 100d | E2E tests — Playwright encounter lifecycle (start → SOAP → close) | 🔴 High |
 | 101 | Add pagination to all list views | 🟡 Medium |
 | 102 | Migrate forms to react-hook-form + Zod | 🟡 Medium |
 | 103 | Replace base64 photo storage with URL/Binary reference | 🟡 Medium |
