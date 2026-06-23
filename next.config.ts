@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     "outvariant",
     "strict-event-emitter",
     "is-node-process",
+    "nanoid",
   ],
 };
 
