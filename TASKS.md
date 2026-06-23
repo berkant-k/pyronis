@@ -46,6 +46,8 @@
 | 79 | Device definitions — CRUD for `Device` resources; 11 device type options; asset code, UDI, manufacturer, model, serial number fields; linked owner org and location; `Devices` added to sidebar nav | Jun 2026 |
 | 80 | Subscription definitions — R4-style FHIR `Subscription` CRUD; criteria string, channel type, endpoint, payload MIME type, HTTP headers, expiry; "Use this app's webhook" shortcut; `Subscriptions` added to sidebar nav | Jun 2026 |
 | 80a | Notification receiver — `POST /api/fhir/notify` API route; stores incoming bundles back to the FHIR server with a `notification` tag; serverless-safe (reads auth token from cookie, not localStorage); returns 200 immediately | Jun 2026 |
+| 100a | Test infrastructure — Jest 29, next/jest, msw v2, Playwright; `jest.config.ts`, `jest.setup.ts`, `playwright.config.ts`, smoke test | Jun 2026 |
+| 100b | Unit tests — `display.ts` helpers (patientDisplayName, patientAge, formatDate, formatDateTime, formatRelativeTime) + `searchPatients()` query routing; 45 passing tests | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -66,6 +68,7 @@
 | 83 | Insurance pre-authorization — PA request/response tied to `ServiceRequest` / `MedicationRequest`; approval reference number, payer, status (pending / approved / denied / expired), expiry tracking; PA status badge visible at order entry | Medium | #3 | — |
 | 84 | Medical fitness certificate — pre-employment exam template (TB/chest X-ray, HIV, hepatitis B/C, syphilis, general fitness); MoPH-format certificate print/PDF; batch processing support for occupational health clinics | Medium | — | — |
 | 88 | HL7 v2 LIS/RIS bridge — ORM message export for lab/rad `ServiceRequest`; ORU inbound parser to auto-create `DiagnosticReport` + `Observation` from lab result messages; implemented as a Next.js API route or sidecar service | High | — | — |
+| 108 | LLM assistant — natural-language appointment management and clinical-document generation from conversation transcripts | High | — | — |
 | 89 | Pharmacist verification — verification status on `MedicationRequest` (pending-pharmacist / pharmacist-verified / dispensed); pharmacist role action to verify; block MAR administration recording on unverified orders | Low | — | — |
 | 91 | Discharge Against Medical Advice (DAMA) — DAMA flag on encounter discharge (`Encounter.hospitalization.dischargeDisposition` code `aadvice`); required clinician and witness attestation fields; printable MoPH-format DAMA form | Low | — | — |
 | 93 | Asia/Qatar timezone handling — all date/time display conversions use `Asia/Qatar` (UTC+3, no DST); fix `toLocaleDateString` and administration-time display across appointments, encounters, and MAR | Low | — | — |
@@ -407,13 +410,99 @@ Fix any handler that does not apply `v ?? ""`.
 
 ---
 
+### #108 · LLM assistant — natural-language appointment management and clinical-document generation
+**Priority:** 🔴 High · **Effort:** High
+
+Add an LLM-powered assistant that handles two distinct interaction modes, both surfaced through a single chat-style prompt bar in the UI.
+
+---
+
+#### Use case 1 — Natural-language appointment commands
+
+The user types a free-text instruction such as:
+- *"List tomorrow's appointments after 10 AM"*
+- *"Cancel my appointments for today after 1 PM"*
+
+The LLM interprets intent, extracts structured parameters (date, time range, action), and the app executes the corresponding FHIR operations — then renders results inline.
+
+**Implementation outline:**
+
+1. **Prompt bar UI** — a floating or sidebar input accepting free text; visible from the appointments page and the dashboard. Place in `src/components/llm/LlmAssistant.tsx` (`"use client"`).
+2. **API route** — `POST /api/llm/appointment-command` receives `{ prompt, context }` (context = today's date, current practitioner ID, timezone `Asia/Qatar`). Never send PHI beyond what is needed to resolve the command.
+3. **LLM call** — send a system prompt describing available actions and expected JSON output schema; ask the model to return a structured intent object:
+   ```json
+   { "action": "list" | "cancel" | "reschedule",
+     "dateRange": { "start": "ISO-8601", "end": "ISO-8601" },
+     "filters": { "afterTime": "HH:MM", "practitionerId": "..." } }
+   ```
+4. **FHIR execution** — map the intent to `searchAppointments()` or `cancelAppointment()` in `src/lib/fhir/appointments.ts`; stream results back to the UI.
+5. **Review step for mutations** — for `cancel` and `reschedule`, show a confirmation list of affected appointments before executing; never auto-cancel without user approval.
+
+---
+
+#### Use case 2 — Clinical-document generation from conversation transcript
+
+The user pastes or dictates a clinician–patient conversation and prompts:
+- *"Here is our conversation with my patient, prepare vital records, other types of observations, SOAP notes and let me review them"*
+
+The LLM extracts structured clinical data and pre-fills the relevant forms for the user to review and confirm before any FHIR write.
+
+**Implementation outline:**
+
+1. **Transcript input dialog** — `src/components/llm/TranscriptDialog.tsx`; large textarea for pasting text, or a record-then-transcribe path (Web Speech API or a free STT service). Accessible from the encounter page action bar.
+2. **API route** — `POST /api/llm/extract-clinical` receives `{ transcript, patientId, encounterId }`. The route strips identifying text before sending to the external LLM.
+3. **LLM extraction prompt** — instruct the model to return a structured payload:
+   ```json
+   {
+     "vitals": [{ "code": "8867-4", "display": "Heart rate", "value": 78, "unit": "bpm" }],
+     "observations": [{ "category": "exam", "code": "...", "display": "...", "value": "..." }],
+     "soap": { "subjective": "...", "objective": "...", "assessment": "...", "plan": "..." },
+     "conditions": [{ "icd10": "J06.9", "display": "Upper respiratory infection" }],
+     "medications": [{ "name": "Amoxicillin", "dose": "500 mg", "frequency": "TID", "duration": "7 days" }]
+   }
+   ```
+4. **Review UI** — `src/components/llm/ExtractedClinicalReview.tsx`; tabbed view (Vitals · Observations · SOAP · Conditions · Medications) with edit-in-place for each field. A "Save all" button or per-section save buttons call the corresponding `create*` functions in `fhir-client.ts`.
+5. **FHIR write** — only on explicit user confirmation; use existing domain functions (`createVitalSigns`, `createSOAPNote`, `createCondition`, etc.).
+
+---
+
+#### Recommended free LLM API
+
+| Option | Notes |
+|---|---|
+| **Google Gemini 1.5 Flash** (`gemini-1.5-flash-8b` free tier) | 1 500 requests/day free; JSON mode (`responseMimeType: "application/json"`) ensures structured output; good multilingual support for AR/EN |
+| **Groq** (Llama 3.1 8B / Mixtral free tier) | Very fast inference; generous free limits; good function-calling support |
+| **Ollama** (local, self-hosted) | Zero cost, no PHI leaves the network; requires the clinic to run a local GPU/CPU server; ideal for production when PHI privacy is critical |
+
+Store the API key in `.env.local` as `LLM_API_KEY` and the chosen provider as `LLM_PROVIDER=gemini | groq | ollama`. Abstract the call behind `src/lib/llm-client.ts` so the provider can be swapped without touching the API routes.
+
+**PHI handling:** never log raw transcripts. Strip or pseudonymize patient name and ID before sending to any external API. Document the chosen model and data-processing agreement in the deployment runbook.
+
+---
+
+#### Files to create / modify
+
+| File | Change |
+|---|---|
+| `src/lib/llm-client.ts` | Provider-agnostic `callLlm(systemPrompt, userPrompt)` wrapper |
+| `src/lib/config.json` | Add `llm.provider`, `llm.storageKey` entries |
+| `src/app/api/llm/appointment-command/route.ts` | Intent extraction + FHIR action dispatch |
+| `src/app/api/llm/extract-clinical/route.ts` | Transcript → structured clinical data |
+| `src/components/llm/LlmAssistant.tsx` | Prompt bar + intent result display |
+| `src/components/llm/TranscriptDialog.tsx` | Transcript input + extraction trigger |
+| `src/components/llm/ExtractedClinicalReview.tsx` | Tabbed review + per-section save |
+| `src/app/appointments/page.tsx` | Mount `<LlmAssistant>` |
+| `src/app/encounters/[id]/page.tsx` | Add "Summarise from transcript" action button |
+
+---
+
 ## Effort summary
 
 | Effort | Count | Task IDs |
 |---|---|---|
 | Low | 36 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 105, 106, 107, 103, 100a, 100b |
 | Medium | 34 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102, 100c, 100d |
-| High | 18 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99 |
+| High | 19 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99, 108 |
 
 ---
 
@@ -456,3 +545,4 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 105 | Move hardcoded `inquiryusername` header to config/env | 🟠 Lower |
 | 106 | Close notification real-time gap (polling or SSE) | 🟠 Lower |
 | 107 | Verify `Select.onValueChange` `v ?? ""` coalescing is consistent | 🟠 Lower |
+| 108 | LLM assistant — natural-language appointment management + clinical-document generation from transcripts | 🔴 High |
