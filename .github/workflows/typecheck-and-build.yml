@@ -19,13 +19,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: yarn
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: TypeScript Check
         run: npx tsc --noEmit
 
       - name: Build Project
-        run: yarn build
+        run: npm run build
