@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -33,6 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
         <Toaster richColors position="top-right" />
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
