@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -31,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           children
         )}
         <Toaster richColors position="top-right" />
+        <SpeedInsights />
       </body>
     </html>
   );
