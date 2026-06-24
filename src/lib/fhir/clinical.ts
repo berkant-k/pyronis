@@ -855,7 +855,7 @@ function buildConsentBody(input: AdvanceDirectiveInput, id?: string): Consent {
             coding: [{system: config.fhir.codeSystems.consentScope, code: "adr", display: "Advanced Care Directive"}],
         },
         category: [{
-            coding: [{system: config.fhir.codeSystems.actCode, code: input.type, display: typeDisplay}],
+            coding: [{system: config.fhir.codeSystems.consentCategory, code: input.type, display: typeDisplay}],
             text: typeDisplay,
         }],
         patient: {reference: `Patient/${input.patientId}`},
