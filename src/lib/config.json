@@ -109,13 +109,14 @@
       "locationType": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
       "healthcareServiceCategory": "https://pyronis.health/fhir/service-category",
       "deviceType": "https://pyronis.health/fhir/device-type",
-      "subscriptionChannelType": "http://hl7.org/fhir/subscription-channel-type"
+      "subscriptionChannelType": "http://hl7.org/fhir/subscription-channel-type",
+      "consentCategory": "http://terminology.hl7.org/CodeSystem/consentcategorycodes"
     },
     "questionnaires": {
-      "phq9": "https://pyronis.health/fhir/Questionnaire/phq9",
-      "gad7": "https://pyronis.health/fhir/Questionnaire/gad7",
-      "auditC": "https://pyronis.health/fhir/Questionnaire/audit-c",
-      "patientIntake": "https://pyronis.health/fhir/Questionnaire/patient-intake"
+      "phq9": "Questionnaire/phq9",
+      "gad7": "Questionnaire/gad7",
+      "auditC": "Questionnaire/audit-c",
+      "patientIntake": "Questionnaire/patient-intake"
     },
     "valueSets": {
       "personType": "https://fhir.pyronis.health/ValueSet/PersonType",

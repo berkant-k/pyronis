@@ -849,20 +849,21 @@ function buildConsentBody(input: AdvanceDirectiveInput, id?: string): Consent {
     const typeDisplay = ADVANCE_DIRECTIVE_DISPLAY[input.type] ?? input.type
     return {
         resourceType: "Consent",
-        ...(id ? { id } : {}),
+        ...(id ? {id} : {}),
         status: input.status as Consent["status"],
         scope: {
-            coding: [{ system: config.fhir.codeSystems.consentScope, code: "adr", display: "Advanced Care Directive" }],
+            coding: [{system: config.fhir.codeSystems.consentScope, code: "adr", display: "Advanced Care Directive"}],
         },
         category: [{
-            coding: [{ system: config.fhir.codeSystems.actCode, code: input.type, display: typeDisplay }],
+            coding: [{system: config.fhir.codeSystems.consentCategory, code: input.type, display: typeDisplay}],
             text: typeDisplay,
         }],
-        patient: { reference: `Patient/${input.patientId}` },
+        patient: {reference: `Patient/${input.patientId}`},
+        policyRule: {coding: [{system: config.fhir.codeSystems.actCode, code: "OPTIN", display: "opt-in"}]},
         dateTime: input.date,
-        ...(input.witness ? { performer: [{ display: input.witness }] } : {}),
+        ...(input.witness ? {performer: [{display: input.witness}]} : {}),
         ...(input.notes ? {
-            extension: [{ url: EXT_DIRECTIVE_NOTES, valueString: input.notes }],
+            extension: [{url: EXT_DIRECTIVE_NOTES, valueString: input.notes}],
         } : {}),
     }
 }
