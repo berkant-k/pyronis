@@ -1,10 +1,9 @@
 name: Typecheck and Build
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - testnet
   workflow_dispatch:
 
 jobs:
