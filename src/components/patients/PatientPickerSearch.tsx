@@ -1,15 +1,15 @@
 "use client"
 
-import { useState, useEffect, useTransition, useRef } from "react"
+import { useState } from "react"
 import type { Patient } from "@medplum/fhirtypes"
 import {
-  searchPatients,
   patientDisplayName,
   patientAge,
   formatDate,
   getPatientMRN,
   getPatientQID,
 } from "@/lib/fhir-client"
+import { usePatientSearch } from "@/lib/query"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Search, Loader2, User, X } from "lucide-react"
@@ -31,50 +31,17 @@ function initials(p: Patient): string {
 
 export function PatientPickerSearch({ selected, onSelect, onClear, disabledId }: Props) {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<Patient[]>([])
-  const [hasSearched, setHasSearched] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const latestQuery = useRef("")
+  const { data: results = [], isFetching, isFetched } = usePatientSearch(query)
 
-  useEffect(() => {
-    const q = query.trim()
-    const delay = q.length >= 2 ? 400 : 0
-    const timer = setTimeout(() => {
-      if (!q || q.length < 2) {
-        setResults([])
-        setHasSearched(false)
-        return
-      }
-      latestQuery.current = q
-      startTransition(async () => {
-        const res = await searchPatients(q)
-        if (latestQuery.current === q) {
-          setResults(res)
-          setHasSearched(true)
-        }
-      })
-    }, delay)
-    return () => clearTimeout(timer)
-  }, [query])
+  const trimmed = query.trim()
+  const hasSearched = trimmed.length >= 2 && isFetched
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (query.trim().length < 2) return
-    const captured = query.trim()
-    latestQuery.current = captured
-    startTransition(async () => {
-      const res = await searchPatients(captured)
-      if (latestQuery.current === captured) {
-        setResults(res)
-        setHasSearched(true)
-      }
-    })
   }
 
   function clearSearch() {
     setQuery("")
-    setResults([])
-    setHasSearched(false)
   }
 
   if (selected) {
@@ -107,7 +74,7 @@ export function PatientPickerSearch({ selected, onSelect, onClear, disabledId }:
   return (
     <div className="space-y-2">
       <form onSubmit={handleSubmit} className="relative">
-        {isPending
+        {isFetching
           ? <Loader2 className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground animate-spin" />
           : <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         }

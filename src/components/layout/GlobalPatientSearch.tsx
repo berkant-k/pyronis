@@ -1,32 +1,31 @@
 "use client"
 
-import { useState, useEffect, useRef, useTransition } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { Search, Loader2, User, ChevronRight } from "lucide-react"
 import type { Patient } from "@medplum/fhirtypes"
 import {
-  searchPatients,
   patientDisplayName,
   patientAge,
   getPatientMRN,
   formatDate,
 } from "@/lib/fhir-client"
+import { usePatientSearch } from "@/lib/query"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export function GlobalPatientSearch() {
   const [query, setQuery]           = useState("")
-  const [results, setResults]       = useState<Patient[]>([])
   const [open, setOpen]             = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null)
-  const [isPending, startTransition] = useTransition()
   const inputRef    = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const portalRef   = useRef<HTMLDivElement>(null)
-  const latestQuery = useRef("")
   const router = useRouter()
+
+  const { data: results = [], isFetching, isFetched } = usePatientSearch(query, 350)
+  const hasSearched = query.trim().length >= 2 && isFetched
 
   // "/" shortcut focuses the input
   useEffect(() => {
@@ -71,33 +70,9 @@ export function GlobalPatientSearch() {
     }
   }, [open])
 
-  // Debounced search
-  useEffect(() => {
-    const q = query.trim()
-    const delay = q.length >= 2 ? 350 : 0
-    const t = setTimeout(() => {
-      if (q.length < 2) {
-        setResults([])
-        setHasSearched(false)
-        return
-      }
-      latestQuery.current = q
-      startTransition(async () => {
-        const r = await searchPatients(q).catch(() => [])
-        if (latestQuery.current === q) {
-          setResults(r)
-          setHasSearched(true)
-        }
-      })
-    }, delay)
-    return () => clearTimeout(t)
-  }, [query])
-
   function handleSelect(p: Patient) {
     setOpen(false)
     setQuery("")
-    setResults([])
-    setHasSearched(false)
     router.push(`/patients/${p.id}`)
   }
 
@@ -122,7 +97,7 @@ export function GlobalPatientSearch() {
       }}
       className="overflow-hidden rounded-lg border bg-background shadow-xl"
     >
-      {isPending ? (
+      {isFetching ? (
         <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Searching…</span>
@@ -212,7 +187,7 @@ export function GlobalPatientSearch() {
 
       {/* Right slot: spinner while fetching, kbd hint otherwise */}
       <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-        {isPending ? (
+        {isFetching ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         ) : (
           <kbd className="hidden select-none items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground sm:flex">

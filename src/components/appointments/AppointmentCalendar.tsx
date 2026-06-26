@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { searchAppointments, patientDisplayName } from "@/lib/fhir-client"
-import type { AppointmentWithPatient } from "@/lib/fhir-client"
+import { patientDisplayName, type AppointmentWithPatient } from "@/lib/fhir-client"
+import { useAppointmentCalendar } from "@/lib/query"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -334,8 +334,6 @@ export function AppointmentCalendar() {
   const [anchor, setAnchor] = useState<Date>(() => {
     const d = new Date(); d.setHours(0,0,0,0); return d
   })
-  const [appts, setAppts] = useState<AppointmentWithPatient[]>([])
-  const [loading, setLoading] = useState(false)
   const [now, setNow] = useState(() => new Date())
 
   // Tick every minute for the time indicator
@@ -373,18 +371,8 @@ export function AppointmentCalendar() {
     }
   }, [view, anchor])
 
-  // Fetch appointments whenever the range changes
-  useEffect(() => {
-    let cancelled = false
-    const t = setTimeout(() => {
-      setLoading(true)
-      searchAppointments({ dateFrom, dateTo, count: 200 })
-        .then(r => { if (!cancelled) setAppts(r) })
-        .catch(() => { if (!cancelled) setAppts([]) })
-        .finally(() => { if (!cancelled) setLoading(false) })
-    }, 0)
-    return () => { cancelled = true; clearTimeout(t) }
-  }, [dateFrom, dateTo])
+  const { data: appts = [], isLoading, isFetching } = useAppointmentCalendar(dateFrom, dateTo)
+  const loading = isLoading || isFetching
 
   const byDay = useMemo(() => groupByDay(appts), [appts])
   const today = useMemo(() => { const d = new Date(); d.setHours(0,0,0,0); return d }, [])

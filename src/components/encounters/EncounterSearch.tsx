@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Patient } from "@medplum/fhirtypes";
+import type { Patient, Encounter } from "@medplum/fhirtypes";
 import {
-  searchEncounters,
   patientDisplayName,
   formatDate,
   getPatientMRN,
@@ -13,8 +12,8 @@ import {
   getEncounterTriageAcuity,
   triageAcuityColor,
   triageAcuityLabel,
-  type EncounterWithPatient,
 } from "@/lib/fhir-client";
+import { useEncounterSearch } from "@/lib/query";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -64,7 +63,7 @@ function patientInitials(p: Patient): string {
   );
 }
 
-function encounterTypeLabel(enc: EncounterWithPatient["encounter"]): string {
+function encounterTypeLabel(enc: Encounter): string {
   return (
     enc.type?.[0]?.coding?.[0]?.display ??
     enc.type?.[0]?.text ??
@@ -72,7 +71,7 @@ function encounterTypeLabel(enc: EncounterWithPatient["encounter"]): string {
   );
 }
 
-function classLabel(enc: EncounterWithPatient["encounter"]): string {
+function classLabel(enc: Encounter): string {
   const code = enc.class?.code ?? "";
   return CLASSES.find((c) => c.value === code)?.label ?? enc.class?.display ?? code ?? "—";
 }
@@ -84,63 +83,15 @@ export function EncounterSearch() {
   const [practitionerQuery, setPractitionerQuery] = useState("");
   const [status, setStatus] = useState("");
   const [classCode, setClassCode] = useState("");
-  const [encounters, setEncounters] = useState<EncounterWithPatient[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const keyRef = useRef(0);
-  const latestRef = useRef({ patientQuery: "", practitionerQuery: "", status: "", classCode: "" });
+  const { data: encounters = [], isLoading, isFetching } = useEncounterSearch({
+    patientQuery,
+    practitionerQuery,
+    status: status || undefined,
+    classCode: classCode || undefined,
+  });
 
-  function runSearch(pq: string, prq: string, st: string, cc: string) {
-    const key = ++keyRef.current;
-    latestRef.current = { patientQuery: pq, practitionerQuery: prq, status: st, classCode: cc };
-    setLoading(true);
-    searchEncounters({
-      patientQuery: pq.trim() || undefined,
-      practitionerQuery: prq.trim() || undefined,
-      status: st || undefined,
-      classCode: cc || undefined,
-    })
-      .then((results) => {
-        if (key === keyRef.current) setEncounters(results);
-      })
-      .catch(() => {
-        if (key === keyRef.current) setEncounters([]);
-      })
-      .finally(() => {
-        if (key === keyRef.current) setLoading(false);
-      });
-  }
-
-  // Initial load
-  useEffect(() => {
-    const t = setTimeout(() => runSearch("", "", "", ""), 0);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Status / class filters — immediate
-  useEffect(() => {
-    const { patientQuery: pq, practitionerQuery: prq } = latestRef.current;
-    const t = setTimeout(() => runSearch(pq, prq, status, classCode), 0);
-    return () => clearTimeout(t);
-  }, [status, classCode]);
-
-  // Patient text — debounced
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const { practitionerQuery: prq, status: st, classCode: cc } = latestRef.current;
-      runSearch(patientQuery, prq, st, cc);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [patientQuery]);
-
-  // Practitioner text — debounced
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const { patientQuery: pq, status: st, classCode: cc } = latestRef.current;
-      runSearch(pq, practitionerQuery, st, cc);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [practitionerQuery]);
+  const loading = isLoading || isFetching;
 
   const hasFilters = Boolean(patientQuery || practitionerQuery || status || classCode);
 

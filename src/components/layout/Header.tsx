@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -15,12 +15,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { GlobalPatientSearch } from "./GlobalPatientSearch"
 import {
-  getNotificationBundles,
   deleteNotificationBundle,
   parseNotificationBundle,
   FHIR_RESOURCE_ROUTES,
   type ParsedNotification,
 } from "@/lib/fhir-client"
+import { useNotifications, queryKeys } from "@/lib/query"
+import { useQueryClient } from "@tanstack/react-query"
 
 // ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 
@@ -155,19 +156,25 @@ function toNotificationItem(parsed: ParsedNotification): NotificationItem {
 
 function NotificationPanel() {
   const [open, setOpen]             = useState(false)
-  const [items, setItems]           = useState<NotificationItem[]>([])
-  const [loading, setLoading]       = useState(true)
+  const [readIds, setReadIds]       = useState<Set<string>>(() => new Set())
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => new Set())
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef   = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
 
-  // Fetch on mount — silently ignore errors (notifications are non-critical)
-  useEffect(() => {
-    getNotificationBundles(10)
-      .then((bundles) => setItems(bundles.map((b) => toNotificationItem(parseNotificationBundle(b)))))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: bundles = [], isLoading } = useNotifications(10)
+
+  const items = useMemo(
+    () =>
+      bundles
+        .map((b) => toNotificationItem(parseNotificationBundle(b)))
+        .filter((item) => !dismissedIds.has(item.bundleId))
+        .map((item) => ({ ...item, read: readIds.has(item.bundleId) })),
+    [bundles, readIds, dismissedIds],
+  )
+
+  const loading = isLoading
 
   const unreadCount = items.filter((n) => !n.read).length
 
@@ -201,12 +208,15 @@ function NotificationPanel() {
   }, [open])
 
   function markAllRead() {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })))
+    setReadIds((prev) => new Set([...prev, ...items.map((n) => n.bundleId)]))
   }
 
   async function dismiss(bundleId: string) {
-    setItems((prev) => prev.filter((n) => n.bundleId !== bundleId))
-    try { await deleteNotificationBundle(bundleId) } catch { /* silent */ }
+    setDismissedIds((prev) => new Set([...prev, bundleId]))
+    try {
+      await deleteNotificationBundle(bundleId)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all })
+    } catch { /* silent */ }
   }
 
   const panelContent = open && triggerRect && createPortal(

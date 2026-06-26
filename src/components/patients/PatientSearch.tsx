@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Patient } from "@medplum/fhirtypes";
 import {
-  searchPatients,
   patientDisplayName,
   patientAge,
   formatDate,
@@ -13,6 +12,7 @@ import {
   getPatientPassport,
   getPatientPhone,
 } from "@/lib/fhir-client";
+import { usePatientSearch } from "@/lib/query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,53 +29,19 @@ import {
 
 export function PatientSearch() {
   const [query, setQuery] = useState("");
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const latestQuery = useRef("");
+  const { data: patients = [], isFetching, isFetched, refetch } = usePatientSearch(query);
 
-  useEffect(() => {
-    const q = query.trim();
-    const delay = q.length >= 2 ? 400 : 0;
-    const timer = setTimeout(() => {
-      if (!q) {
-        setPatients([]);
-        setHasSearched(false);
-        return;
-      }
-      if (q.length < 2) return;
-      latestQuery.current = q;
-      startTransition(async () => {
-        const results = await searchPatients(q);
-        if (latestQuery.current === q) {
-          setPatients(results);
-          setHasSearched(true);
-        }
-      });
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [query]);
+  const trimmed = query.trim();
+  const hasSearched = trimmed.length >= 2 && isFetched;
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
-    const captured = query.trim();
-    latestQuery.current = captured;
-    startTransition(async () => {
-      const results = await searchPatients(captured);
-      if (latestQuery.current === captured) {
-        setPatients(results);
-        setHasSearched(true);
-      }
-    });
+    if (trimmed.length >= 2) void refetch();
   }
 
   function clearSearch() {
     setQuery("");
-    setPatients([]);
-    setHasSearched(false);
   }
 
   function initials(p: Patient): string {
@@ -108,8 +74,8 @@ export function PatientSearch() {
             </button>
           )}
         </div>
-        <Button type="submit" disabled={isPending || !query.trim()}>
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+        <Button type="submit" disabled={isFetching || trimmed.length < 2}>
+          {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
         </Button>
       </form>
 

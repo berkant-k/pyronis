@@ -13,6 +13,11 @@ import {
 } from "@/lib/fhir-client";
 import { queryEmpiByQID, getEmpiBaseUrl } from "@/lib/empi-client";
 import { COUNTRIES } from "@/lib/countries";
+import {
+  useInvalidatePatient,
+  useInvalidatePatientSearch,
+  useInvalidateDashboard,
+} from "@/lib/query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -167,6 +172,9 @@ const STATUS_FIELDS = [
 
 export function PatientForm({ mode, patientId, defaultValues, existingPhotoDataUrl }: PatientFormProps) {
   const router = useRouter();
+  const invalidatePatient = useInvalidatePatient();
+  const invalidatePatientSearch = useInvalidatePatientSearch();
+  const invalidateDashboard = useInvalidateDashboard();
   const [form, setForm]               = useState<PatientFormState>(defaultValues ?? EMPTY);
   const [errors, setErrors]           = useState<FormErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -277,9 +285,13 @@ export function PatientForm({ mode, patientId, defaultValues, existingPhotoDataU
     try {
       if (mode === "edit" && patientId) {
         await updatePatient(patientId, input);
+        invalidatePatient(patientId);
+        invalidateDashboard();
         router.push(`/patients/${patientId}`);
       } else {
         const patient = await createPatient(input);
+        invalidatePatientSearch();
+        invalidateDashboard();
         router.push(`/patients/${patient.id}`);
       }
     } catch (err) {
