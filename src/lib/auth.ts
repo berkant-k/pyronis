@@ -27,6 +27,13 @@ export function clearAuthToken(): void {
 
 export const NO_AUTH_SENTINEL = "no-auth";
 
+export function fhirTenantHeaders(): Record<string, string> {
+    const headerName = config.fhir.server.tenantHeader.trim();
+    const tenant = process.env.NEXT_PUBLIC_FHIR_TENANT?.trim() || config.fhir.server.tenant.trim();
+    if (!headerName || !tenant) return {};
+    return { [headerName]: tenant };
+}
+
 export async function authHeaders(
     extra: Record<string, string> = {}
 ): Promise<Record<string, string>> {
@@ -47,7 +54,7 @@ export async function authHeaders(
         }
     }
 
-    return {...extra, Authorization: `Bearer ${token}`, "inquiryusername": "pyronis"};
+    return {...extra, Authorization: `Bearer ${token}`, ...fhirTenantHeaders()};
 }
 
 export function parseJwtClaims(token: string): Record<string, unknown> | null {
