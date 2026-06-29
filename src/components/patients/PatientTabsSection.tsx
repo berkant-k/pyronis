@@ -174,7 +174,7 @@ export function PatientTabsSection({
           <EncountersTab encounters={enc} />
         </TabsContent>
         <TabsContent value="vitals">
-          <VitalsDisplay observations={obs} />
+          <VitalsDisplay observations={obs} patient={patient} />
         </TabsContent>
         <TabsContent value="conditions">
           <PatientProblemListTab initialConditions={cond} patientId={patientId} patient={patientInfo} />

@@ -52,6 +52,7 @@ import { CloseEncounterButton } from "@/components/encounters/CloseEncounterButt
 import { SoapNoteEditor } from "@/components/encounters/SoapNoteEditor";
 import { RawFhirDialog } from "@/components/ui/RawFhirDialog";
 import { EncounterTabsSection } from "@/components/encounters/EncounterTabsSection";
+import {GrowthChartsDialog} from "@/components/ui/GrowthChartsDialog";
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -159,6 +160,7 @@ export default async function EncounterDetailPage({
           {patientId && (
             <RecordVitalsButton patientId={patientId} encounterId={id} />
           )}
+          <GrowthChartsDialog patient={patient} observations={observations} patientInfo={patientInfo}></GrowthChartsDialog>
           <Link
             href={`/encounters/${id}/soap-print`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}

@@ -1,15 +1,6 @@
-import type {
-    Bundle,
-    Patient,
-    Practitioner,
-    Resource,
-} from "@medplum/fhirtypes";
-import {
-    fhirFetch,
-    EXT_LANGUAGE,
-    EXT_NAME_LANGUAGE,
-} from "./client";
-import { bundleToPatients } from "./patients";
+import type {Bundle, Patient, Practitioner, Resource,} from "@medplum/fhirtypes";
+import {EXT_LANGUAGE, EXT_NAME_LANGUAGE, fhirFetch,} from "./client";
+import {bundleToPatients} from "./patients";
 
 // ─── Display helpers ─────────────────────────────────────────────────────────
 
@@ -37,11 +28,16 @@ export function patientDisplayName(p: Patient): string {
 
 export function patientAge(p: Patient): string {
     if (!p.birthDate) return "—";
+    return String(patientAgeNumeric(p));
+}
+
+export function patientAgeNumeric(p: Patient): number {
+    if (!p.birthDate) return 0;
     const birth = new Date(p.birthDate);
     const now = new Date();
     const years = now.getFullYear() - birth.getFullYear();
     const m = now.getMonth() - birth.getMonth();
-    return String(m < 0 || (m === 0 && now.getDate() < birth.getDate()) ? years - 1 : years);
+    return m < 0 || (m === 0 && now.getDate() < birth.getDate()) ? years - 1 : years;
 }
 
 export function formatDate(dateStr?: string): string {

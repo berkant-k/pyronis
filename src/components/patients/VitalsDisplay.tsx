@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { LayoutGrid, Table2, Clock, Activity } from "lucide-react"
-import type { Observation } from "@medplum/fhirtypes"
+import type { Observation, Patient } from "@medplum/fhirtypes"
 import { formatDate } from "@/lib/fhir-client"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
+import { GrowthCharts } from "@/components/patients/GrowthCharts"
 import {
   Table,
   TableBody,
@@ -103,7 +104,7 @@ function VitalCard({ vital }: { vital: LatestVital }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function VitalsDisplay({ observations }: { observations: Observation[] }) {
+export function VitalsDisplay({ observations, patient }: { observations: Observation[]; patient?: Patient }) {
   const [view, setView] = useState<"dashboard" | "table">("dashboard")
 
   if (!observations.length) {
@@ -122,6 +123,8 @@ export function VitalsDisplay({ observations }: { observations: Observation[] })
 
   return (
     <div className="space-y-4">
+      <GrowthCharts patient={patient} observations={observations} />
+
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
