@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {GrowthChartsDialog} from "@/components/ui/GrowthChartsDialog";
+import {name} from "next/dist/server/ci-info";
 
 // LOINC-based clinical priority order
 const VITAL_SORT_ORDER = [
@@ -123,8 +125,7 @@ export function VitalsDisplay({ observations, patient }: { observations: Observa
 
   return (
     <div className="space-y-4">
-      <GrowthCharts patient={patient} observations={observations} />
-
+      <GrowthChartsDialog patient={patient} observations={observations} />
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
