@@ -14,7 +14,7 @@ import {
   getPatientMRN,
   getEncounterVisitId,
   EXT_ADMIN_NOTES,
-  EXT_VIP,
+  EXT_VIP, patientAgeNumeric,
 } from "@/lib/fhir-client";
 import type {
   Condition,
@@ -23,6 +23,7 @@ import type {
   Patient,
 } from "@medplum/fhirtypes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GrowthCharts } from "@/components/patients/GrowthCharts";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -103,6 +104,8 @@ export default async function PatientChartPage({
   const adminNotes = patient.extension?.find(
     (x) => x.url === EXT_ADMIN_NOTES
   )?.valueString;
+
+  const ageNumeric=patientAgeNumeric(patient);
 
   const activeConditions = conditions.filter((c) =>
     ["active", "recurrence", "relapse"].includes(
@@ -407,6 +410,7 @@ export default async function PatientChartPage({
         </CardContent>
       </Card>
 
+        {ageNumeric <= 20 && (<GrowthCharts patient={patient} observations={observations}/>)}
       {/* ── Vitals ── */}
       {latestVitals.length > 0 && (
         <Card>

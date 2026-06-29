@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import config from "@/lib/config.json";
+import { fhirTenantHeaders } from "@/lib/auth";
 
 const { system, code } = config.notifications.tag;
 
@@ -8,7 +9,7 @@ async function serverAuthHeaders(): Promise<Record<string, string>> {
     const cookieStore = await cookies();
     const token = cookieStore.get(config.auth.storageKey)?.value ?? null;
     if (!token || token === "no-auth") return {};
-    return { Authorization: `Bearer ${token}`, inquiryusername: "pyronis" };
+    return { Authorization: `Bearer ${token}`, ...fhirTenantHeaders() };
 }
 
 export async function POST(req: NextRequest) {

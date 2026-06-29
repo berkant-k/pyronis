@@ -48,6 +48,8 @@
 | 80a | Notification receiver — `POST /api/fhir/notify` API route; stores incoming bundles back to the FHIR server with a `notification` tag; serverless-safe (reads auth token from cookie, not localStorage); returns 200 immediately | Jun 2026 |
 | 100a | Test infrastructure — Jest 29, next/jest, msw v2, Playwright; `jest.config.ts`, `jest.setup.ts`, `playwright.config.ts`, smoke test | Jun 2026 |
 | 100b | Unit tests — `display.ts` helpers (patientDisplayName, patientAge, formatDate, formatDateTime, formatRelativeTime) + `searchPatients()` query routing; 45 passing tests | Jun 2026 |
+| 105 | FHIR tenant header — moved hardcoded `inquiryusername: pyronis` to `config.fhir.server` with `NEXT_PUBLIC_FHIR_TENANT` override; shared by auth headers and notification receiver | Jun 2026 |
+| 59 | Paediatric growth charts — CDC 2–20 year weight, height, and BMI centile charts with patient readings from FHIR Observations | Jun 2026 |
 
 > Tasks not listed here (practitioners, organizations, sidebar, raw FHIR, referrals, etc.) were completed in earlier sessions before the task register was created. See the **"What is already implemented"** table in `MISSING_FEATURES.md` for the full list.
 
@@ -137,7 +139,6 @@
 | 56 | SMART on FHIR — standard launch context and OAuth scopes | High | #5 | §15 |
 | 57 | Patient portal — self-service access to results, appointments, and medications | High | — | §17 |
 | 58 | Server-side PDF generation for print pages | Medium | — | §14 |
-| 59 | Paediatric growth charts (weight/height/BMI centiles) | Medium | — | §24.17 |
 | 60 | International Vaccination Certificate print | Low | — | §24.14 |
 | 61 | Recurring appointments | Medium | — | §24.19 |
 | 62 | Telehealth / virtual encounter flag and video link | Low | — | §24.19 |
@@ -380,9 +381,9 @@ These components mount on every page. Profile with React DevTools Profiler to fi
 ---
 
 ### #105 · Move hardcoded `inquiryusername` header to config/env
-**Priority:** 🟠 Lower · **Effort:** Low · **File:** `src/lib/fhir-client.ts` — base fetch wrapper
+**Priority:** 🟠 Lower · **Effort:** Low · **Status:** ✅ Done
 
-The `inquiryusername: pyronis` header is hardcoded. If this is a tenant identifier or credential, move it to `src/lib/config.json` (under a `server` key) or `NEXT_PUBLIC_FHIR_TENANT` environment variable.
+**Completed Jun 2026.** `inquiryusername` is now configured via `src/lib/config.json` under `fhir.server`, with `NEXT_PUBLIC_FHIR_TENANT` as an environment override. `authHeaders()` and the notification receiver both use the shared tenant-header helper.
 
 ---
 
@@ -500,8 +501,8 @@ Store the API key in `.env.local` as `LLM_API_KEY` and the chosen provider as `L
 
 | Effort | Count | Task IDs |
 |---|---|---|
-| Low | 36 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 105, 106, 107, 103, 100a, 100b |
-| Medium | 34 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 59, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102, 100c, 100d |
+| Low | 35 | 1, 10, 12, 15, 19, 25, 26, 27, 28, 29, 30, 34, 37, 40, 41, 43, 47, 48, 50, 60, 62, 66, 80b, 80c, 80d, 89, 91, 92, 93, 94, 106, 107, 103, 100a, 100b |
+| Medium | 33 | 2, 3, 4, 11, 13, 14, 16, 17, 23, 24, 31, 32, 35, 39, 42, 45, 55, 58, 61, 65, 79, 80, 80a, 81, 82, 83, 84, 86, 96, 101, 102, 100c, 100d |
 | High | 19 | 5, 9, 22, 44, 51, 52, 53, 54, 56, 57, 63, 64, 87, 88, 90, 97, 98, 99, 108 |
 
 ---
@@ -542,7 +543,6 @@ Unblocked, Low effort, High or Medium priority — best starting points:
 | 102 | Migrate forms to react-hook-form + Zod | 🟡 Medium |
 | 103 | Replace base64 photo storage with URL/Binary reference | 🟡 Medium |
 | 104 | Audit and memoize layout component re-renders | 🟠 Lower |
-| 105 | Move hardcoded `inquiryusername` header to config/env | 🟠 Lower |
 | 106 | Close notification real-time gap (polling or SSE) | 🟠 Lower |
 | 107 | Verify `Select.onValueChange` `v ?? ""` coalescing is consistent | 🟠 Lower |
 | 108 | LLM assistant — natural-language appointment management + clinical-document generation from transcripts | 🔴 High |

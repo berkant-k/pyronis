@@ -5,6 +5,10 @@
   },
   "fhir": {
     "storageKey": "pyronis_fhir_base_url",
+    "server": {
+      "tenantHeader": "inquiryusername",
+      "tenant": "pyronis"
+    },
     "profiles": {
       "patient": "https://fhir.pyronis.health/StructureDefinition/PatientWithIdentifierProfile"
     },
