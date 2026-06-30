@@ -82,7 +82,7 @@ export function EncounterSearch() {
 
   const [patientQuery, setPatientQuery] = useState("");
   const [practitionerQuery, setPractitionerQuery] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("in-progress");
   const [classCode, setClassCode] = useState("");
   const [encounters, setEncounters] = useState<EncounterWithPatient[]>([]);
   const [loading, setLoading] = useState(true);

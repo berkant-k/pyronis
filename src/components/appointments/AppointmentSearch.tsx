@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export function AppointmentSearch({ refreshKey = 0 }: { refreshKey?: number }) {
   const [patientQuery, setPatientQuery] = useState("")
-  const [status, setStatus] = useState("")
+  const [status, setStatus] = useState("booked")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [results, setResults] = useState<AppointmentWithPatient[]>([])
