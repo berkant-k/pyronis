@@ -6,7 +6,6 @@ import type { Observation, Patient } from "@medplum/fhirtypes"
 import { formatDate } from "@/lib/fhir-client"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
-import { GrowthCharts } from "@/components/patients/GrowthCharts"
 import {
   Table,
   TableBody,
@@ -16,7 +15,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {GrowthChartsDialog} from "@/components/ui/GrowthChartsDialog";
-import {name} from "next/dist/server/ci-info";
 
 // LOINC-based clinical priority order
 const VITAL_SORT_ORDER = [
