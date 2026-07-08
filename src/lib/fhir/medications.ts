@@ -120,10 +120,7 @@ function buildDischargeRxBody(input: DischargeRxInput, id?: string): MedicationR
             text:             buildDosageSig(input),
             ...(input.route     ? { route: { text: input.route } } : {}),
             ...(input.frequency ? { timing: { code: { text: input.frequency } } } : {}),
-            asNeededBoolean:  !!input.prn,
-            ...(input.prn && input.prnReason
-                ? { asNeededCodeableConcept: { text: input.prnReason } }
-                : {}),
+            ...(input.prnReason && input.prn ? { asNeededCodeableConcept: { text: input.prnReason } } : {asNeededBoolean: !!input.prn}),
         }],
         ...(input.quantity || input.refills !== undefined ? {
             dispenseRequest: {
