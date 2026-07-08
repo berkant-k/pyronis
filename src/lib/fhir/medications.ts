@@ -139,8 +139,10 @@ function buildDischargeRxBody(input: DischargeRxInput, id?: string): MedicationR
 }
 
 export function parseDischargeRx(m: MedicationRequest): DischargeRxInput {
-    const ext    = m.extension?.find((e) => e.url === EXT_RX_STRUCTURED);
+    const ext = m.extension?.find((e) => e.url === EXT_RX_STRUCTURED);
     const getExt = (key: string) => ext?.extension?.find((e) => e.url === key)?.valueString;
+    const prnReasonText = m.dosageInstruction?.[0]?.asNeededCodeableConcept?.text ?? getExt("prnReason");
+    const prnBoolean = m.dosageInstruction?.[0]?.asNeededBoolean ?? !!prnReasonText;
     return {
         patientId:    parseFhirId(m.subject?.reference, "Patient")   ?? "",
         encounterId:  parseFhirId(m.encounter?.reference, "Encounter") ?? "",
@@ -152,8 +154,8 @@ export function parseDischargeRx(m: MedicationRequest): DischargeRxInput {
         duration:     getExt("duration"),
         quantity:     m.dispenseRequest?.quantity?.value?.toString() ?? getExt("quantity"),
         refills:      m.dispenseRequest?.numberOfRepeatsAllowed,
-        prn:          m.dosageInstruction?.[0]?.asNeededBoolean,
-        prnReason:    m.dosageInstruction?.[0]?.asNeededCodeableConcept?.text ?? getExt("prnReason"),
+        prn:          prnBoolean,
+        prnReason:    prnReasonText,
         indication:   m.reasonCode?.[0]?.text,
         instructions: m.note?.[0]?.text,
     };
