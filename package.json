@@ -16,15 +16,15 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@medplum/core": "^4.5.2",
+    "@medplum/core": "^5.1.6",
     "@medplum/fhirtypes": "^4.5.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",
-    "nanoid": "^5.1.11",
-    "next": "16.2.7",
+    "nanoid": "^5.1.16",
+    "next": "16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.10.0",
@@ -51,6 +51,6 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "undici": "^8.5.0"
+    "undici": "^8.9.0"
   }
 }
